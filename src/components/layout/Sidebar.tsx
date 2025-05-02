@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Calendar, BarChart2, Settings, Target, MessageSquare, Globe, Plus } from 'lucide-react';
+import { Home, Calendar, BarChart2, Settings, Target, MessageSquare, Globe, Plus, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -46,12 +46,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
     >
       <div className="flex flex-col h-full py-4 px-2">
         <div className="mb-6 px-2">
-          <Button 
-            className="w-full bg-brand-600 hover:bg-brand-700 text-white gap-2 justify-start"
-          >
-            <Plus className="h-5 w-5" />
-            {isOpen && <span>New Post</span>}
-          </Button>
+          <Link to="/compose">
+            <Button 
+              className="w-full bg-brand-600 hover:bg-brand-700 text-white gap-2 justify-start"
+            >
+              <Plus className="h-5 w-5" />
+              {isOpen && <span>New Post</span>}
+            </Button>
+          </Link>
         </div>
 
         <nav className="space-y-1">
@@ -77,6 +79,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
             isCollapsed={!isOpen} 
           />
           <NavItem 
+            to="/platforms" 
+            icon={Globe} 
+            title="Platforms" 
+            isActive={location.pathname === '/platforms'} 
+            isCollapsed={!isOpen} 
+          />
+          <NavItem 
+            to="/messages" 
+            icon={Bell} 
+            title="Messages" 
+            isActive={location.pathname === '/messages'} 
+            isCollapsed={!isOpen} 
+          />
+          <NavItem 
             to="/analytics" 
             icon={BarChart2} 
             title="Analytics" 
@@ -88,13 +104,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
             icon={Target} 
             title="Campaigns" 
             isActive={location.pathname === '/campaigns'} 
-            isCollapsed={!isOpen} 
-          />
-          <NavItem 
-            to="/accounts" 
-            icon={Globe} 
-            title="Accounts" 
-            isActive={location.pathname === '/accounts'} 
             isCollapsed={!isOpen} 
           />
         </nav>

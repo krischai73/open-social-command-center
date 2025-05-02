@@ -10,6 +10,8 @@ import Calendar from "./pages/Calendar";
 import Compose from "./pages/Compose";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import PlatformsPage from "./pages/Platforms";
+import MessagesPage from "./pages/Messages";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +26,8 @@ const App = () => (
           <Route path="/calendar" element={<MainLayout><Calendar /></MainLayout>} />
           <Route path="/compose" element={<MainLayout><Compose /></MainLayout>} />
           <Route path="/settings" element={<MainLayout><Settings /></MainLayout>} />
+          <Route path="/platforms" element={<MainLayout><PlatformsPage /></MainLayout>} />
+          <Route path="/messages" element={<MainLayout><MessagesPage /></MainLayout>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
