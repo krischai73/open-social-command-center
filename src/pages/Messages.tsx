@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -277,10 +278,9 @@ const MessagesPage: React.FC = () => {
                 <div className="p-4 border-t">
                   <div className="space-y-4">
                     <div>
-                      <Input 
+                      <Textarea 
                         placeholder="Type your reply..." 
-                        className="min-h-[80px]" 
-                        multiline="true"
+                        className="min-h-[80px]"
                       />
                     </div>
                     <div className="flex items-center justify-between">
