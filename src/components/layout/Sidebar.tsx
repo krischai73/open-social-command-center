@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Home, Calendar, BarChart2, Settings, Target, MessageSquare, Globe, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -35,6 +35,8 @@ const NavItem: React.FC<NavItemProps> = ({ icon: Icon, title, to, isActive = fal
 };
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
+  const location = useLocation();
+  
   return (
     <aside 
       className={cn(
@@ -53,16 +55,58 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         </div>
 
         <nav className="space-y-1">
-          <NavItem to="/" icon={Home} title="Dashboard" isActive isCollapsed={!isOpen} />
-          <NavItem to="/calendar" icon={Calendar} title="Calendar" isCollapsed={!isOpen} />
-          <NavItem to="/compose" icon={MessageSquare} title="Compose" isCollapsed={!isOpen} />
-          <NavItem to="/analytics" icon={BarChart2} title="Analytics" isCollapsed={!isOpen} />
-          <NavItem to="/campaigns" icon={Target} title="Campaigns" isCollapsed={!isOpen} />
-          <NavItem to="/accounts" icon={Globe} title="Accounts" isCollapsed={!isOpen} />
+          <NavItem 
+            to="/" 
+            icon={Home} 
+            title="Dashboard" 
+            isActive={location.pathname === '/'} 
+            isCollapsed={!isOpen} 
+          />
+          <NavItem 
+            to="/calendar" 
+            icon={Calendar} 
+            title="Calendar" 
+            isActive={location.pathname === '/calendar'} 
+            isCollapsed={!isOpen} 
+          />
+          <NavItem 
+            to="/compose" 
+            icon={MessageSquare} 
+            title="Compose" 
+            isActive={location.pathname === '/compose'} 
+            isCollapsed={!isOpen} 
+          />
+          <NavItem 
+            to="/analytics" 
+            icon={BarChart2} 
+            title="Analytics" 
+            isActive={location.pathname === '/analytics'} 
+            isCollapsed={!isOpen} 
+          />
+          <NavItem 
+            to="/campaigns" 
+            icon={Target} 
+            title="Campaigns" 
+            isActive={location.pathname === '/campaigns'} 
+            isCollapsed={!isOpen} 
+          />
+          <NavItem 
+            to="/accounts" 
+            icon={Globe} 
+            title="Accounts" 
+            isActive={location.pathname === '/accounts'} 
+            isCollapsed={!isOpen} 
+          />
         </nav>
 
         <div className="mt-auto space-y-1">
-          <NavItem to="/settings" icon={Settings} title="Settings" isCollapsed={!isOpen} />
+          <NavItem 
+            to="/settings" 
+            icon={Settings} 
+            title="Settings" 
+            isActive={location.pathname === '/settings'} 
+            isCollapsed={!isOpen} 
+          />
         </div>
       </div>
     </aside>
