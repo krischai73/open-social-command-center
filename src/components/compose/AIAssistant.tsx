@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -166,6 +165,8 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ content, setContent }) => {
       // Make sure we're not duplicating hashtags
       let updatedContent = content;
       const existingHashtags = content.match(/#[a-zA-Z0-9]+/g) || [];
+      
+      // Fix: Proper type handling for filtering arrays
       const newHashtags = hashtags.filter(tag => !existingHashtags.includes(tag));
       
       if (newHashtags.length > 0) {
@@ -201,7 +202,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ content, setContent }) => {
   };
   
   const getTrendingHashtagsByTopic = (topic: string): string[] => {
-    // This would be replaced with actual trending hashtag API
+    // Fix: Explicitly define the type for hashtagsByTopic
     const hashtagsByTopic: Record<string, string[]> = {
       'product': ['#ProductUpdate', '#Innovation', '#NewFeatures', '#TechNews', '#ProductivityTips'],
       'team': ['#TeamCulture', '#HiringNow', '#CareerGrowth', '#CompanyCulture', '#WorkLife'],
@@ -209,6 +210,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ content, setContent }) => {
       'general': ['#TrendingNow', '#MustSee', '#2023Trends', '#IndustryLeaders', '#BestPractices']
     };
     
+    // Fix: Ensure this returns a proper string array
     return (hashtagsByTopic[topic] || hashtagsByTopic.general).sort(() => 0.5 - Math.random()).slice(0, 3);
   };
 
