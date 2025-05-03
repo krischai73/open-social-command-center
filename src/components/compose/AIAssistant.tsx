@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -167,8 +166,8 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ content, setContent }) => {
       let updatedContent = content;
       const existingHashtags = content.match(/#[a-zA-Z0-9]+/g) || [];
       
-      // Fix: Explicitly type newHashtags as string[] and the tag parameter in the filter callback
-      const newHashtags: string[] = hashtags.filter((tag: string) => !existingHashtags.includes(tag));
+      // Fix the type issue by properly typing the hashtags array and filter function
+      const newHashtags = hashtags.filter((tag) => !existingHashtags.includes(tag));
       
       if (newHashtags.length > 0) {
         // If content already ends with hashtags, add more, otherwise add a line break first
@@ -211,7 +210,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ content, setContent }) => {
       'general': ['#TrendingNow', '#MustSee', '#2023Trends', '#IndustryLeaders', '#BestPractices']
     };
     
-    // Return a string array to fix the type issue
+    // Return a string array
     return (hashtagsByTopic[topic] || hashtagsByTopic.general).sort(() => 0.5 - Math.random()).slice(0, 3);
   };
 
