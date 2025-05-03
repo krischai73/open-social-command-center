@@ -167,7 +167,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ content, setContent }) => {
       let updatedContent = content;
       const existingHashtags = content.match(/#[a-zA-Z0-9]+/g) || [];
       
-      // Fix: Use explicit type for newHashtags to resolve the 'never' type issue
+      // Fix: Type this properly to avoid the 'never' type issue
       const newHashtags: string[] = hashtags.filter((tag: string) => !existingHashtags.includes(tag));
       
       if (newHashtags.length > 0) {
@@ -203,7 +203,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ content, setContent }) => {
   };
   
   const getTrendingHashtagsByTopic = (topic: string): string[] => {
-    // Fix: Explicitly define the type for hashtagsByTopic
+    // Explicitly define the type for hashtagsByTopic
     const hashtagsByTopic: Record<string, string[]> = {
       'product': ['#ProductUpdate', '#Innovation', '#NewFeatures', '#TechNews', '#ProductivityTips'],
       'team': ['#TeamCulture', '#HiringNow', '#CareerGrowth', '#CompanyCulture', '#WorkLife'],
@@ -211,7 +211,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ content, setContent }) => {
       'general': ['#TrendingNow', '#MustSee', '#2023Trends', '#IndustryLeaders', '#BestPractices']
     };
     
-    // Fix: Ensure this returns a proper string array
+    // Return a string array to fix the type issue
     return (hashtagsByTopic[topic] || hashtagsByTopic.general).sort(() => 0.5 - Math.random()).slice(0, 3);
   };
 

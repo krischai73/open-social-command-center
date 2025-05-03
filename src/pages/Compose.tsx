@@ -12,12 +12,111 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
+import { toast } from '@/components/ui/sonner';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import AIAssistant from '@/components/compose/AIAssistant';
 
 const Compose: React.FC = () => {
   const [date, setDate] = useState<Date>();
   const [content, setContent] = useState<string>('');
   const [showAIOptions, setShowAIOptions] = useState<boolean>(false);
+  
+  // New states for button dialogs
+  const [mediaUrl, setMediaUrl] = useState<string>('');
+  const [linkUrl, setLinkUrl] = useState<string>('');
+  const [linkTitle, setLinkTitle] = useState<string>('');
+  const [mention, setMention] = useState<string>('');
+  const [hashtag, setHashtag] = useState<string>('');
+  const [repurposeContent, setRepurposeContent] = useState<string>('');
+
+  // Handle media insertion
+  const handleInsertMedia = () => {
+    if (!mediaUrl.trim()) {
+      toast.error("Please enter a valid media URL");
+      return;
+    }
+    
+    // In a real app, you might want to validate the URL format
+    const mediaPlaceholder = `\n[Image: ${mediaUrl}]\n`;
+    setContent(prevContent => prevContent + mediaPlaceholder);
+    setMediaUrl('');
+    toast.success("Media added to post");
+  };
+
+  // Handle link insertion
+  const handleInsertLink = () => {
+    if (!linkUrl.trim()) {
+      toast.error("Please enter a valid URL");
+      return;
+    }
+    
+    const linkText = linkTitle.trim() || linkUrl;
+    const linkMarkup = ` [${linkText}](${linkUrl}) `;
+    
+    setContent(prevContent => prevContent + linkMarkup);
+    setLinkUrl('');
+    setLinkTitle('');
+    toast.success("Link added to post");
+  };
+
+  // Handle mention insertion
+  const handleInsertMention = () => {
+    if (!mention.trim()) {
+      toast.error("Please enter a valid username");
+      return;
+    }
+    
+    let mentionText = mention.trim();
+    // Add @ if it doesn't exist
+    if (!mentionText.startsWith('@')) {
+      mentionText = `@${mentionText}`;
+    }
+    
+    setContent(prevContent => prevContent + ` ${mentionText} `);
+    setMention('');
+    toast.success("Mention added to post");
+  };
+
+  // Handle hashtag insertion
+  const handleInsertHashtag = () => {
+    if (!hashtag.trim()) {
+      toast.error("Please enter a valid hashtag");
+      return;
+    }
+    
+    let hashtagText = hashtag.trim();
+    // Remove spaces and special characters
+    hashtagText = hashtagText.replace(/[^\w]/g, '');
+    // Add # if it doesn't exist
+    if (!hashtagText.startsWith('#')) {
+      hashtagText = `#${hashtagText}`;
+    }
+    
+    setContent(prevContent => prevContent + ` ${hashtagText} `);
+    setHashtag('');
+    toast.success("Hashtag added to post");
+  };
+
+  // Handle repurpose content
+  const handleRepurposeContent = () => {
+    if (!repurposeContent.trim()) {
+      toast.error("Please enter content to repurpose");
+      return;
+    }
+    
+    // In a real app, this would use AI to repurpose content
+    // For now, we'll just add it to the current content
+    setContent(prevContent => {
+      if (prevContent.trim()) {
+        return prevContent + "\n\n" + repurposeContent;
+      }
+      return repurposeContent;
+    });
+    
+    setRepurposeContent('');
+    toast.success("Content repurposed successfully");
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -58,26 +157,200 @@ const Compose: React.FC = () => {
                 />
                 
                 <div className="flex flex-wrap items-center gap-2">
-                  <Button variant="outline" size="sm" className="gap-1">
-                    <Image className="h-4 w-4" />
-                    <span>Media</span>
-                  </Button>
-                  <Button variant="outline" size="sm" className="gap-1">
-                    <Link className="h-4 w-4" />
-                    <span>Link</span>
-                  </Button>
-                  <Button variant="outline" size="sm" className="gap-1">
-                    <AtSign className="h-4 w-4" />
-                    <span>Mention</span>
-                  </Button>
-                  <Button variant="outline" size="sm" className="gap-1">
-                    <Hash className="h-4 w-4" />
-                    <span>Hashtag</span>
-                  </Button>
-                  <Button variant="outline" size="sm" className="gap-1">
-                    <FileText className="h-4 w-4" />
-                    <span>Repurpose</span>
-                  </Button>
+                  {/* Media Button with Dialog */}
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-1">
+                        <Image className="h-4 w-4" />
+                        <span>Media</span>
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Insert Media</DialogTitle>
+                        <DialogDescription>
+                          Add an image or video to your post.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="media-url">Media URL</Label>
+                          <Input 
+                            id="media-url" 
+                            placeholder="https://example.com/image.jpg" 
+                            value={mediaUrl}
+                            onChange={(e) => setMediaUrl(e.target.value)}
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <DialogClose asChild>
+                            <Button variant="outline">Cancel</Button>
+                          </DialogClose>
+                          <DialogClose asChild>
+                            <Button onClick={handleInsertMedia}>Insert Media</Button>
+                          </DialogClose>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
+                  {/* Link Button with Dialog */}
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-1">
+                        <Link className="h-4 w-4" />
+                        <span>Link</span>
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Insert Link</DialogTitle>
+                        <DialogDescription>
+                          Add a link to your post.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="link-url">URL</Label>
+                          <Input 
+                            id="link-url" 
+                            placeholder="https://example.com" 
+                            value={linkUrl}
+                            onChange={(e) => setLinkUrl(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="link-title">Link Text (optional)</Label>
+                          <Input 
+                            id="link-title" 
+                            placeholder="Click here" 
+                            value={linkTitle}
+                            onChange={(e) => setLinkTitle(e.target.value)}
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <DialogClose asChild>
+                            <Button variant="outline">Cancel</Button>
+                          </DialogClose>
+                          <DialogClose asChild>
+                            <Button onClick={handleInsertLink}>Insert Link</Button>
+                          </DialogClose>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
+                  {/* Mention Button with Dialog */}
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-1">
+                        <AtSign className="h-4 w-4" />
+                        <span>Mention</span>
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Insert Mention</DialogTitle>
+                        <DialogDescription>
+                          Mention a user in your post.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="mention">Username</Label>
+                          <Input 
+                            id="mention" 
+                            placeholder="username" 
+                            value={mention}
+                            onChange={(e) => setMention(e.target.value)}
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <DialogClose asChild>
+                            <Button variant="outline">Cancel</Button>
+                          </DialogClose>
+                          <DialogClose asChild>
+                            <Button onClick={handleInsertMention}>Insert Mention</Button>
+                          </DialogClose>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
+                  {/* Hashtag Button with Dialog */}
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-1">
+                        <Hash className="h-4 w-4" />
+                        <span>Hashtag</span>
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Insert Hashtag</DialogTitle>
+                        <DialogDescription>
+                          Add a hashtag to your post.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="hashtag">Hashtag</Label>
+                          <Input 
+                            id="hashtag" 
+                            placeholder="trending" 
+                            value={hashtag}
+                            onChange={(e) => setHashtag(e.target.value)}
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <DialogClose asChild>
+                            <Button variant="outline">Cancel</Button>
+                          </DialogClose>
+                          <DialogClose asChild>
+                            <Button onClick={handleInsertHashtag}>Insert Hashtag</Button>
+                          </DialogClose>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
+                  {/* Repurpose Button with Dialog */}
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-1">
+                        <FileText className="h-4 w-4" />
+                        <span>Repurpose</span>
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Repurpose Content</DialogTitle>
+                        <DialogDescription>
+                          Reuse existing content in your post.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="repurpose">Content to Repurpose</Label>
+                          <Textarea 
+                            id="repurpose" 
+                            placeholder="Paste content here to repurpose" 
+                            value={repurposeContent}
+                            onChange={(e) => setRepurposeContent(e.target.value)}
+                            className="min-h-[100px]"
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <DialogClose asChild>
+                            <Button variant="outline">Cancel</Button>
+                          </DialogClose>
+                          <DialogClose asChild>
+                            <Button onClick={handleRepurposeContent}>Repurpose</Button>
+                          </DialogClose>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
             </CardContent>
@@ -114,7 +387,7 @@ const Compose: React.FC = () => {
                         <span className="font-semibold">Your Company</span>
                         <span className="text-muted-foreground">@yourcompany</span>
                       </div>
-                      <p className="mt-1">{content || "Your post content will appear here. Add text in the composer to see the preview."}</p>
+                      <p className="mt-1 whitespace-pre-line">{content || "Your post content will appear here. Add text in the composer to see the preview."}</p>
                     </div>
                   </div>
                 </TabsContent>
@@ -125,7 +398,7 @@ const Compose: React.FC = () => {
                     </div>
                     <div>
                       <span className="font-semibold">yourcompany</span>
-                      <p className="mt-1">{content || "Your post content will appear here. Add text in the composer to see the preview."}</p>
+                      <p className="mt-1 whitespace-pre-line">{content || "Your post content will appear here. Add text in the composer to see the preview."}</p>
                     </div>
                   </div>
                 </TabsContent>
@@ -136,7 +409,7 @@ const Compose: React.FC = () => {
                     </div>
                     <div>
                       <span className="font-semibold">Your Company Page</span>
-                      <p className="mt-1">{content || "Your post content will appear here. Add text in the composer to see the preview."}</p>
+                      <p className="mt-1 whitespace-pre-line">{content || "Your post content will appear here. Add text in the composer to see the preview."}</p>
                     </div>
                   </div>
                 </TabsContent>
@@ -212,11 +485,11 @@ const Compose: React.FC = () => {
           </Card>
           
           <div className="flex gap-3">
-            <Button variant="outline" className="w-full gap-1">
+            <Button variant="outline" className="w-full gap-1" onClick={() => toast.success("Draft saved!")}>
               <Save className="h-4 w-4" />
               Save Draft
             </Button>
-            <Button className="w-full gap-1">
+            <Button className="w-full gap-1" onClick={() => toast.success("Post scheduled successfully!")}>
               <SendHorizontal className="h-4 w-4" />
               Schedule
             </Button>
