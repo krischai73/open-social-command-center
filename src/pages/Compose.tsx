@@ -16,11 +16,15 @@ import { toast } from '@/components/ui/sonner';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import AIAssistant from '@/components/compose/AIAssistant';
+import IntelligentScheduling from '@/components/compose/IntelligentScheduling';
+import TimeSelector from '@/components/compose/TimeSelector';
 
 const Compose: React.FC = () => {
   const [date, setDate] = useState<Date>();
+  const [time, setTime] = useState<string>('');
   const [content, setContent] = useState<string>('');
   const [showAIOptions, setShowAIOptions] = useState<boolean>(false);
+  const [showSchedulingOptions, setShowSchedulingOptions] = useState<boolean>(false);
   
   // New states for button dialogs
   const [mediaUrl, setMediaUrl] = useState<string>('');
@@ -421,11 +425,31 @@ const Compose: React.FC = () => {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Post Settings</CardTitle>
+              <CardTitle className="flex items-center justify-between">
+                <span>Post Settings</span>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-1"
+                  onClick={() => setShowSchedulingOptions(!showSchedulingOptions)}
+                >
+                  <BrainCircuit className="h-4 w-4" />
+                  <span>Smart Schedule</span>
+                </Button>
+              </CardTitle>
               <CardDescription>Configure when and where to publish</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                {showSchedulingOptions && (
+                  <IntelligentScheduling 
+                    date={date}
+                    setDate={setDate}
+                    time={time}
+                    setTime={setTime}
+                  />
+                )}
+              
                 <div>
                   <label className="block text-sm font-medium mb-1">Platforms</label>
                   <div className="flex gap-2">
@@ -460,6 +484,7 @@ const Compose: React.FC = () => {
                           selected={date}
                           onSelect={setDate}
                           initialFocus
+                          className="pointer-events-auto"
                         />
                       </PopoverContent>
                     </Popover>
@@ -469,10 +494,7 @@ const Compose: React.FC = () => {
                 <div>
                   <label className="block text-sm font-medium mb-1">Time</label>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="w-full justify-start gap-1">
-                      <Clock className="h-4 w-4" />
-                      Select time
-                    </Button>
+                    <TimeSelector value={time} onChange={setTime} />
                   </div>
                 </div>
                 
@@ -489,7 +511,16 @@ const Compose: React.FC = () => {
               <Save className="h-4 w-4" />
               Save Draft
             </Button>
-            <Button className="w-full gap-1" onClick={() => toast.success("Post scheduled successfully!")}>
+            <Button 
+              className="w-full gap-1" 
+              onClick={() => {
+                if (!date || !time) {
+                  toast.error("Please select a date and time first!");
+                  return;
+                }
+                toast.success(`Post scheduled successfully for ${format(date, "PPP")} at ${time}!`);
+              }}
+            >
               <SendHorizontal className="h-4 w-4" />
               Schedule
             </Button>
