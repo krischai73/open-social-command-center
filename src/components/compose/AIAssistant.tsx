@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -166,7 +167,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ content, setContent }) => {
       let updatedContent = content;
       const existingHashtags = content.match(/#[a-zA-Z0-9]+/g) || [];
       
-      // Fix: Explicitly type newHashtags as string[] and the tag parameter
+      // Fix: Explicitly type newHashtags as string[] and the tag parameter in the filter callback
       const newHashtags: string[] = hashtags.filter((tag: string) => !existingHashtags.includes(tag));
       
       if (newHashtags.length > 0) {
