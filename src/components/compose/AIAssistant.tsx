@@ -1,362 +1,421 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/sonner';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  Sparkles, Wand2, Languages, TrendingUp, MessageSquare, BrainCircuit
-} from 'lucide-react';
+import { Sparkles, MessageSquare, Wand2, Hash, ThumbsUp } from 'lucide-react';
 
 interface AIAssistantProps {
   content: string;
-  setContent: (content: string) => void;
+  setContent: React.Dispatch<React.SetStateAction<string>>;
 }
 
-type ToneType = 'professional' | 'casual' | 'friendly' | 'enthusiastic' | 'formal' | 'humorous';
-
-type LanguageType = 'english' | 'spanish' | 'french' | 'german' | 'italian' | 'portuguese' | 'japanese' | 'chinese';
-
 const AIAssistant: React.FC<AIAssistantProps> = ({ content, setContent }) => {
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [selectedTone, setSelectedTone] = useState<ToneType>('professional');
-  const [selectedLanguage, setSelectedLanguage] = useState<LanguageType>('english');
-  const [isTranslating, setIsTranslating] = useState<boolean>(false);
-  const [isOptimizing, setIsOptimizing] = useState<boolean>(false);
-  const [isAddingTags, setIsAddingTags] = useState<boolean>(false);
-  const [showLanguageSelector, setShowLanguageSelector] = useState<boolean>(false);
-
+  const [tab, setTab] = useState("generate");
+  const [generating, setGenerating] = useState(false);
+  const [optimizing, setOptimizing] = useState(false);
+  const [formattingText, setFormattingText] = useState(false);
+  const [generationPrompt, setGenerationPrompt] = useState("");
+  const [tone, setTone] = useState("professional");
+  const [language, setLanguage] = useState("english");
+  const [promptTopic, setPromptTopic] = useState('');
+  const [promptKeywords, setPromptKeywords] = useState('');
+  
+  // Tone options for generation
   const tones = [
-    { value: 'professional', label: 'Professional' },
-    { value: 'casual', label: 'Casual' },
-    { value: 'friendly', label: 'Friendly' },
-    { value: 'enthusiastic', label: 'Enthusiastic' },
-    { value: 'formal', label: 'Formal' },
-    { value: 'humorous', label: 'Humorous' }
+    { value: "professional", label: "Professional" },
+    { value: "casual", label: "Casual" },
+    { value: "friendly", label: "Friendly" },
+    { value: "humorous", label: "Humorous" },
+    { value: "formal", label: "Formal" },
+    { value: "persuasive", label: "Persuasive" },
+    { value: "informative", label: "Informative" }
   ];
-
+  
+  // Language options for generation
   const languages = [
-    { value: 'english', label: 'English' },
-    { value: 'spanish', label: 'Spanish' },
-    { value: 'french', label: 'French' },
-    { value: 'german', label: 'German' },
-    { value: 'italian', label: 'Italian' },
-    { value: 'portuguese', label: 'Portuguese' },
-    { value: 'japanese', label: 'Japanese' },
-    { value: 'chinese', label: 'Chinese' }
+    { value: "english", label: "English" },
+    { value: "spanish", label: "Spanish" },
+    { value: "french", label: "French" },
+    { value: "german", label: "German" },
+    { value: "italian", label: "Italian" },
+    { value: "portuguese", label: "Portuguese" },
+    { value: "japanese", label: "Japanese" }
   ];
 
-  const handleGenerateContent = () => {
-    setIsGenerating(true);
-    // Simulating AI generation
+  // Content optimization options
+  const optimizationTypes = [
+    { value: "readability", label: "Improve Readability" },
+    { value: "engagement", label: "Increase Engagement" },
+    { value: "seo", label: "Optimize for SEO" },
+    { value: "shorten", label: "Condense Content" },
+    { value: "expand", label: "Expand Content" }
+  ];
+
+  // Formatting options
+  const formattingTypes = [
+    { value: "bullets", label: "Convert to Bullet Points" },
+    { value: "paragraph", label: "Format as Paragraphs" },
+    { value: "qaFormat", label: "Q&A Format" },
+    { value: "callout", label: "Add Call to Action" }
+  ];
+
+  // Topic categories for hashtags
+  const hashtagTopics = [
+    { value: "marketing", label: "Marketing" },
+    { value: "technology", label: "Technology" },
+    { value: "business", label: "Business" },
+    { value: "lifestyle", label: "Lifestyle" },
+    { value: "health", label: "Health & Wellness" },
+    { value: "travel", label: "Travel" },
+    { value: "finance", label: "Finance" },
+    { value: "creativity", label: "Creative Arts" },
+    { value: "education", label: "Education" },
+    { value: "general", label: "General" }
+  ];
+
+  // Generate content based on prompt
+  const handleGenerate = () => {
+    if (!generationPrompt.trim()) {
+      toast.error("Please enter a prompt for content generation");
+      return;
+    }
+
+    setGenerating(true);
+    
+    // This would be an actual AI generation call in a production app
     setTimeout(() => {
-      const generatedContent = getAIGeneratedContent(selectedTone);
+      const generatedContent = `Sample ${tone} content about ${generationPrompt} in ${language}. 
+      
+This is an example of AI-generated content that would typically be created based on the user's prompt, tone, and language selection. In a production environment, this would connect to an actual AI service.
+
+This is just placeholder content to demonstrate the functionality.`;
+      
       setContent(generatedContent);
-      setIsGenerating(false);
-      toast.success('Content generated successfully!');
+      setGenerating(false);
+      toast.success("Content generated successfully!");
     }, 1500);
   };
 
-  const getAIGeneratedContent = (tone: string) => {
-    // This would be replaced with actual AI API call
-    const content = {
-      professional: "Introducing our latest feature set designed to optimize your workflow and increase productivity. #ProductivityBoost #Innovation",
-      casual: "Hey everyone! Check out our cool new features - they're going to make your day so much easier! 😎 #GameChanger",
-      friendly: "We're excited to share these new updates with you! Let us know what you think 💬 #FeedbackWelcome",
-      enthusiastic: "WOW! Our AMAZING new features are HERE! You're going to LOVE how they transform your experience! 🚀 #MindBlown",
-      formal: "We are pleased to announce the implementation of our newest functionality, designed to enhance user experience and efficiency.",
-      humorous: "Our developers finally stopped playing ping pong long enough to create these awesome features. You're welcome! 🏓 #DevLife"
-    };
-    return content[tone as keyof typeof content] || content.professional;
-  };
+  // Optimize existing content
+  const handleOptimize = (optimizationType: string) => {
+    if (!content.trim()) {
+      toast.error("Please add some content to optimize");
+      return;
+    }
 
-  const handleOptimizeContent = () => {
-    if (!content.trim()) {
-      toast.error('Please add some content first!');
-      return;
-    }
+    setOptimizing(true);
     
-    setIsOptimizing(true);
-    
-    // Simulate optimization process
+    // This would be an actual AI optimization call in a production app
     setTimeout(() => {
-      // Add emojis, improve sentence structure
-      let optimized = content;
+      let optimizedContent = content;
       
-      // Add emojis if none exist
-      if (!optimized.includes('🚀') && !optimized.includes('😊')) {
-        optimized = optimized.replace(/feature/i, 'feature 🚀');
-        optimized = optimized.replace(/excited|happy|glad/i, match => `${match} 😊`);
+      switch (optimizationType) {
+        case "readability":
+          optimizedContent = `${content}\n\n[Readability Improved by AI]`;
+          break;
+        case "engagement":
+          optimizedContent = `${content}\n\n[Engagement Enhanced by AI]`;
+          break;
+        case "seo":
+          optimizedContent = `${content}\n\n[SEO Optimized by AI]`;
+          break;
+        case "shorten":
+          optimizedContent = content.substring(0, Math.max(content.length * 0.7, 20)) + "\n\n[Condensed by AI]";
+          break;
+        case "expand":
+          optimizedContent = `${content}\n\nAdditionally, this expanded content provides more context and details about the subject. [Expanded by AI]`;
+          break;
+        default:
+          optimizedContent = content;
       }
       
-      // Improve engagement with questions
-      if (!optimized.includes('?')) {
-        optimized += ' What do you think?';
-      }
-      
-      setContent(optimized);
-      setIsOptimizing(false);
-      toast.success('Content optimized for engagement!');
-    }, 1200);
-  };
-  
-  const handleTranslateContent = () => {
-    if (!content.trim()) {
-      toast.error('Please add some content first!');
-      return;
-    }
-    
-    setIsTranslating(true);
-    
-    // Simulate translation process
-    setTimeout(() => {
-      const translatedContent = getTranslatedContent(content, selectedLanguage);
-      setContent(translatedContent);
-      setIsTranslating(false);
-      toast.success(`Content translated to ${selectedLanguage}!`);
-      setShowLanguageSelector(false);
+      setContent(optimizedContent);
+      setOptimizing(false);
+      toast.success(`Content ${optimizationType} complete!`);
     }, 1500);
   };
-  
-  const getTranslatedContent = (text: string, language: LanguageType) => {
-    // This would be replaced with actual translation API
-    const translations: Record<LanguageType, string> = {
-      english: text, // Keep original if English
-      spanish: text.length > 50 ? 
-        "¡Presentamos nuestras últimas características diseñadas para optimizar su flujo de trabajo! #Innovación #Productividad" : 
-        "¡Hola! Mira nuestras nuevas funciones. ¿Qué te parecen?",
-      french: text.length > 50 ? 
-        "Nous présentons nos dernières fonctionnalités conçues pour optimiser votre flux de travail! #Innovation #Productivité" : 
-        "Bonjour! Découvrez nos nouvelles fonctionnalités. Qu'en pensez-vous?",
-      german: text.length > 50 ? 
-        "Wir stellen unsere neuesten Funktionen vor, die Ihren Arbeitsablauf optimieren! #Innovation #Produktivität" : 
-        "Hallo! Sehen Sie sich unsere neuen Funktionen an. Was denken Sie?",
-      italian: text.length > 50 ? 
-        "Presentiamo le nostre ultime funzionalità progettate per ottimizzare il flusso di lavoro! #Innovazione #Produttività" : 
-        "Ciao! Guarda le nostre nuove funzionalità. Cosa ne pensi?",
-      portuguese: text.length > 50 ? 
-        "Apresentamos nossos recursos mais recentes projetados para otimizar seu fluxo de trabalho! #Inovação #Produtividade" : 
-        "Olá! Confira nossos novos recursos. O que você acha?",
-      japanese: text.length > 50 ? 
-        "ワークフローを最適化するための最新機能を紹介します！ #イノベーション #生産性" : 
-        "こんにちは！新機能をご覧ください。どう思いますか？",
-      chinese: text.length > 50 ? 
-        "我们推出了旨在优化工作流程的最新功能！ #创新 #生产力" : 
-        "你好！查看我们的新功能。你觉得怎么样？"
-    };
-    
-    return translations[language] || text;
-  };
-  
-  const handleTrendingHashtags = () => {
+
+  // Format content
+  const handleFormat = (formatType: string) => {
     if (!content.trim()) {
-      toast.error('Please add some content first!');
+      toast.error("Please add some content to format");
+      return;
+    }
+
+    setFormattingText(true);
+    
+    // This would be an actual formatting call in a production app
+    setTimeout(() => {
+      let formattedContent = content;
+      
+      switch (formatType) {
+        case "bullets":
+          formattedContent = content.split(".").filter(s => s.trim()).map(s => `• ${s.trim()}`).join("\n");
+          break;
+        case "paragraph":
+          formattedContent = content.split("\n").filter(s => s.trim()).map(s => `${s.trim()}\n`).join("\n");
+          break;
+        case "qaFormat":
+          formattedContent = `Q: What's the main point?\nA: ${content.trim().split(".")[0]}.\n\nQ: Can you elaborate?\nA: ${content.trim().substring(content.indexOf(".")+1)}`;
+          break;
+        case "callout":
+          formattedContent = `${content.trim()}\n\n👉 Learn more! Click the link in our bio for details.`;
+          break;
+        default:
+          formattedContent = content;
+      }
+      
+      setContent(formattedContent);
+      setFormattingText(false);
+      toast.success(`Content formatted as ${formatType}!`);
+    }, 1000);
+  };
+
+  // Handle adding trending hashtags
+  const handleTrendingHashtags = (topic: string) => {
+    if (!content.trim()) {
+      toast.error("Please add some content first");
       return;
     }
     
-    setIsAddingTags(true);
+    const hashtags = getHashtagsForTopic(topic);
     
-    // Simulate hashtag research and addition
-    setTimeout(() => {
-      const contentTopic = detectContentTopic(content);
-      const hashtags = getTrendingHashtagsByTopic(contentTopic);
-      
-      // Make sure we're not duplicating hashtags
+    if (hashtags && hashtags.length > 0) {
       let updatedContent = content;
       const existingHashtags = content.match(/#[a-zA-Z0-9]+/g) || [];
       
-      // Fix the type issue by properly typing the hashtags array and filter function
-      const newHashtags = hashtags.filter((tag) => !existingHashtags.includes(tag));
+      // Fixed: Explicitly define hashtags type as string[] and properly type the filter function
+      const newHashtags = hashtags.filter((tag: string) => !existingHashtags.includes(tag));
       
       if (newHashtags.length > 0) {
         // If content already ends with hashtags, add more, otherwise add a line break first
-        if (/[#][a-zA-Z0-9]+$/.test(content.trim())) {
-          updatedContent = `${content.trim()} ${newHashtags.join(' ')}`;
+        if (content.trim().match(/#[a-zA-Z0-9]+$/)) {
+          updatedContent = `${updatedContent} ${newHashtags.join(' ')}`;
         } else {
-          updatedContent = `${content.trim()}\n\n${newHashtags.join(' ')}`;
+          updatedContent = `${updatedContent}\n\n${newHashtags.join(' ')}`;
         }
         
         setContent(updatedContent);
-        toast.success('Trending hashtags added!');
+        toast.success(`Added trending hashtags for ${topic}!`);
       } else {
-        toast.info('Content already has optimal hashtags!');
+        toast.info("All relevant hashtags are already in your content!");
       }
-      
-      setIsAddingTags(false);
-    }, 1200);
-  };
-  
-  const detectContentTopic = (text: string): string => {
-    // Very simple topic detection - in real app, this would use AI
-    const textLower = text.toLowerCase();
-    if (textLower.includes('feature') || textLower.includes('product') || textLower.includes('update')) {
-      return 'product';
-    } else if (textLower.includes('team') || textLower.includes('hiring') || textLower.includes('join')) {
-      return 'team';
-    } else if (textLower.includes('sale') || textLower.includes('discount') || textLower.includes('offer')) {
-      return 'promotion';
-    } else {
-      return 'general';
     }
   };
   
-  const getTrendingHashtagsByTopic = (topic: string): string[] => {
-    // Explicitly define the type for hashtagsByTopic
+  // Generate prompt based on topic and keywords
+  const handleGenerateFromPrompt = () => {
+    if (!promptTopic.trim()) {
+      toast.error("Please enter a topic");
+      return;
+    }
+    
+    setGenerating(true);
+    
+    // This would connect to an AI service in a production app
+    setTimeout(() => {
+      let keywords = promptKeywords.trim() ? ` including keywords: ${promptKeywords}` : '';
+      
+      const generatedContent = `Here's a ${tone} post about ${promptTopic}${keywords}.
+      
+This is an example of content that would be generated based on the provided topic and keywords using AI. In an actual implementation, this would be created dynamically by a language model.
+
+#${promptTopic.replace(/\s+/g, '')} ${promptKeywords.split(',').filter(k => k.trim()).map(k => `#${k.trim().replace(/\s+/g, '')}`).join(' ')}`;
+      
+      setContent(generatedContent);
+      setGenerating(false);
+      toast.success("Content generated from topic!");
+    }, 1500);
+  };
+  
+  // Get hashtags for a given topic
+  const getHashtagsForTopic = (topic: string): string[] => {
     const hashtagsByTopic: Record<string, string[]> = {
-      'product': ['#ProductUpdate', '#Innovation', '#NewFeatures', '#TechNews', '#ProductivityTips'],
-      'team': ['#TeamCulture', '#HiringNow', '#CareerGrowth', '#CompanyCulture', '#WorkLife'],
-      'promotion': ['#SpecialOffer', '#LimitedTime', '#DontMissOut', '#Deal', '#Savings'],
+      'marketing': ['#MarketingTips', '#DigitalMarketing', '#ContentStrategy', '#BrandAwareness', '#MarketingROI'],
+      'technology': ['#TechTrends', '#Innovation', '#DigitalTransformation', '#AI', '#MachineLearning'],
+      'business': ['#BusinessGrowth', '#Entrepreneurship', '#Leadership', '#StartupLife', '#BusinessStrategy'],
+      'lifestyle': ['#LifestyleTips', '#SelfCare', '#WorkLifeBalance', '#LifeHacks', '#Mindfulness'],
+      'health': ['#Wellness', '#HealthyLiving', '#MentalHealth', '#Fitness', '#Nutrition'],
+      'travel': ['#TravelTips', '#Wanderlust', '#TravelPhotography', '#Vacation', '#Adventure'],
+      'finance': ['#PersonalFinance', '#Investing', '#FinancialFreedom', '#MoneyManagement', '#WealthBuilding'],
+      'creativity': ['#CreativeMindset', '#Design', '#ArtistOnSocial', '#CreativeProcess', '#Inspiration'],
+      'education': ['#Learning', '#EducationMatters', '#Students', '#Teaching', '#SkillDevelopment'],
       'general': ['#TrendingNow', '#MustSee', '#2023Trends', '#IndustryLeaders', '#BestPractices']
     };
     
-    // Return a string array
     return (hashtagsByTopic[topic] || hashtagsByTopic.general).sort(() => 0.5 - Math.random()).slice(0, 3);
   };
 
   return (
-    <Card className="bg-slate-50 border border-blue-100 mb-4">
-      <CardContent className="p-4">
-        <h3 className="text-sm font-medium mb-3 flex items-center">
-          <Sparkles className="h-4 w-4 text-blue-500 mr-2" />
-          AI Content Assistant
-        </h3>
-        <div className="space-y-3">
-          <div className="flex flex-wrap gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1">
-                  <Wand2 className="h-4 w-4" />
-                  <span>{selectedTone}</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="p-0" align="start" side="bottom">
-                <Command>
-                  <CommandList>
-                    <CommandGroup heading="Select tone">
-                      {tones.map((tone) => (
-                        <CommandItem
-                          key={tone.value}
-                          onSelect={() => setSelectedTone(tone.value as ToneType)}
-                          className="cursor-pointer"
-                        >
-                          {tone.label}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="gap-1"
-              onClick={handleGenerateContent}
-              disabled={isGenerating}
-            >
-              {isGenerating ? (
-                <>
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
-                  <span>Generating...</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4" />
-                  <span>Generate</span>
-                </>
-              )}
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="gap-1"
-              onClick={handleOptimizeContent}
-              disabled={isOptimizing}
-            >
-              {isOptimizing ? (
-                <>
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
-                  <span>Optimizing...</span>
-                </>
-              ) : (
-                <>
-                  <MessageSquare className="h-4 w-4" />
-                  <span>Optimize</span>
-                </>
-              )}
-            </Button>
-            <Popover open={showLanguageSelector} onOpenChange={setShowLanguageSelector}>
-              <PopoverTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="gap-1"
-                  onClick={() => setShowLanguageSelector(true)}
-                >
-                  <Languages className="h-4 w-4" />
-                  <span>Translate</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="p-3" side="bottom">
-                <div className="space-y-3">
-                  <h4 className="text-sm font-medium">Select language</h4>
-                  <Select
-                    value={selectedLanguage}
-                    onValueChange={(value) => setSelectedLanguage(value as LanguageType)}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select language" />
+    <Card className="border-dashed border-primary/20 bg-background/50">
+      <CardContent className="pt-4">
+        <Tabs value={tab} onValueChange={setTab} className="w-full">
+          <TabsList className="grid grid-cols-4 mb-2">
+            <TabsTrigger value="generate" className="text-xs">
+              <Sparkles className="h-3.5 w-3.5 mr-1" />
+              Generate
+            </TabsTrigger>
+            <TabsTrigger value="optimize" className="text-xs">
+              <Wand2 className="h-3.5 w-3.5 mr-1" />
+              Optimize
+            </TabsTrigger>
+            <TabsTrigger value="format" className="text-xs">
+              <MessageSquare className="h-3.5 w-3.5 mr-1" />
+              Format
+            </TabsTrigger>
+            <TabsTrigger value="hashtags" className="text-xs">
+              <Hash className="h-3.5 w-3.5 mr-1" />
+              Hashtags
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="generate" className="space-y-3 mt-2">
+            <div>
+              <div className="grid grid-cols-2 gap-2 mb-2">
+                <div className="space-y-1">
+                  <label htmlFor="tone" className="text-xs font-medium">Tone:</label>
+                  <Select value={tone} onValueChange={setTone}>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="Select tone" />
                     </SelectTrigger>
                     <SelectContent>
-                      {languages.map((language) => (
-                        <SelectItem key={language.value} value={language.value}>
-                          {language.label}
-                        </SelectItem>
+                      {tones.map(t => (
+                        <SelectItem key={t.value} value={t.value} className="text-xs">{t.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <Button 
-                    className="w-full"
-                    onClick={handleTranslateContent}
-                    disabled={isTranslating}
+                </div>
+                
+                <div className="space-y-1">
+                  <label htmlFor="language" className="text-xs font-medium">Language:</label>
+                  <Select value={language} onValueChange={setLanguage}>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="Select language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {languages.map(l => (
+                        <SelectItem key={l.value} value={l.value} className="text-xs">{l.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="space-y-1 mb-2">
+                <label htmlFor="prompt" className="text-xs font-medium">Generate from topic:</label>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="col-span-2">
+                    <Input
+                      id="topic"
+                      placeholder="Enter topic"
+                      value={promptTopic}
+                      onChange={(e) => setPromptTopic(e.target.value)}
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                  <Button
+                    size="sm"
+                    className="h-8 text-xs"
+                    onClick={handleGenerateFromPrompt}
+                    disabled={generating || !promptTopic.trim()}
                   >
-                    {isTranslating ? (
-                      <>
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2"></div>
-                        <span>Translating...</span>
-                      </>
-                    ) : (
-                      <span>Translate</span>
-                    )}
+                    Generate
                   </Button>
                 </div>
-              </PopoverContent>
-            </Popover>
+              </div>
+              
+              <div className="space-y-1">
+                <label htmlFor="keywords" className="text-xs font-medium">Keywords (optional):</label>
+                <Input
+                  id="keywords"
+                  placeholder="Enter keywords, separated by commas"
+                  value={promptKeywords}
+                  onChange={(e) => setPromptKeywords(e.target.value)}
+                  className="h-8 text-xs"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-1">
+              <label htmlFor="customPrompt" className="text-xs font-medium">Custom generation prompt:</label>
+              <Textarea 
+                id="customPrompt"
+                placeholder="Tell the AI what content you want to create..."
+                value={generationPrompt}
+                onChange={(e) => setGenerationPrompt(e.target.value)}
+                className="h-16 text-xs resize-none"
+              />
+            </div>
+            
             <Button 
-              variant="outline" 
-              size="sm" 
-              className="gap-1"
-              onClick={handleTrendingHashtags}
-              disabled={isAddingTags}
+              onClick={handleGenerate}
+              className="w-full text-xs h-8"
+              disabled={generating || !generationPrompt.trim()}
             >
-              {isAddingTags ? (
-                <>
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
-                  <span>Adding...</span>
-                </>
-              ) : (
-                <>
-                  <TrendingUp className="h-4 w-4" />
-                  <span>Trending Tags</span>
-                </>
-              )}
+              {generating ? "Generating..." : "Generate Content"}
             </Button>
-          </div>
-          <div className="text-xs text-muted-foreground">
-            AI can help generate engaging content, optimize for each platform, suggest trending hashtags, and more.
-          </div>
-        </div>
+          </TabsContent>
+          
+          <TabsContent value="optimize" className="mt-2">
+            <p className="text-xs text-muted-foreground mb-2">Select an optimization to apply to your content:</p>
+            <div className="space-y-2">
+              {optimizationTypes.map((type) => (
+                <Button
+                  key={type.value}
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start text-xs h-8"
+                  disabled={optimizing}
+                  onClick={() => handleOptimize(type.value)}
+                >
+                  <ThumbsUp className="h-3.5 w-3.5 mr-2" />
+                  {type.label}
+                </Button>
+              ))}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="format" className="mt-2">
+            <p className="text-xs text-muted-foreground mb-2">Select a formatting option:</p>
+            <div className="grid grid-cols-2 gap-2">
+              {formattingTypes.map((format) => (
+                <Button
+                  key={format.value}
+                  variant="outline"
+                  size="sm"
+                  className="justify-start text-xs h-8"
+                  disabled={formattingText}
+                  onClick={() => handleFormat(format.value)}
+                >
+                  {format.label}
+                </Button>
+              ))}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="hashtags" className="mt-2">
+            <p className="text-xs text-muted-foreground mb-2">Add trending hashtags by category:</p>
+            <div className="grid grid-cols-2 gap-2">
+              {hashtagTopics.map((topic) => (
+                <Button
+                  key={topic.value}
+                  variant="outline"
+                  size="sm"
+                  className="justify-start text-xs h-8"
+                  onClick={() => handleTrendingHashtags(topic.value)}
+                >
+                  <Hash className="h-3.5 w-3.5 mr-1" />
+                  {topic.label}
+                </Button>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );

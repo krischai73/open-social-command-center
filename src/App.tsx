@@ -12,6 +12,7 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import PlatformsPage from "./pages/Platforms";
 import MessagesPage from "./pages/Messages";
+import Analytics from "./pages/Analytics"; // New analytics page
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/settings" element={<MainLayout><Settings /></MainLayout>} />
           <Route path="/platforms" element={<MainLayout><PlatformsPage /></MainLayout>} />
           <Route path="/messages" element={<MainLayout><MessagesPage /></MainLayout>} />
+          <Route path="/analytics" element={<MainLayout><Analytics /></MainLayout>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

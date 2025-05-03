@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Calendar as CalendarIcon, Twitter, Instagram, Facebook, Image, Link, AtSign, Hash, Clock,
-  Save, SendHorizontal, BrainCircuit, FileText
+  Save, SendHorizontal, BrainCircuit, FileText, BarChart
 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import AIAssistant from '@/components/compose/AIAssistant';
 import IntelligentScheduling from '@/components/compose/IntelligentScheduling';
 import TimeSelector from '@/components/compose/TimeSelector';
+import AnalyticsInsights from '@/components/analytics/AnalyticsInsights';
 
 const Compose: React.FC = () => {
   const [date, setDate] = useState<Date>();
@@ -25,6 +26,10 @@ const Compose: React.FC = () => {
   const [content, setContent] = useState<string>('');
   const [showAIOptions, setShowAIOptions] = useState<boolean>(false);
   const [showSchedulingOptions, setShowSchedulingOptions] = useState<boolean>(false);
+  const [showAnalyticsInsights, setShowAnalyticsInsights] = useState<boolean>(false);
+  
+  // Platform selection state
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(['twitter']);
   
   // New states for button dialogs
   const [mediaUrl, setMediaUrl] = useState<string>('');
@@ -33,6 +38,17 @@ const Compose: React.FC = () => {
   const [mention, setMention] = useState<string>('');
   const [hashtag, setHashtag] = useState<string>('');
   const [repurposeContent, setRepurposeContent] = useState<string>('');
+
+  // Toggle platform selection
+  const togglePlatform = (platform: string) => {
+    setSelectedPlatforms(prev => {
+      if (prev.includes(platform)) {
+        return prev.filter(p => p !== platform);
+      } else {
+        return [...prev, platform];
+      }
+    });
+  };
 
   // Handle media insertion
   const handleInsertMedia = () => {
@@ -135,15 +151,26 @@ const Compose: React.FC = () => {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Post Content</span>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="gap-1"
-                  onClick={() => setShowAIOptions(!showAIOptions)}
-                >
-                  <BrainCircuit className="h-4 w-4" />
-                  <span>AI Assistant</span>
-                </Button>
+                <div className="flex space-x-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="gap-1"
+                    onClick={() => setShowAIOptions(!showAIOptions)}
+                  >
+                    <BrainCircuit className="h-4 w-4" />
+                    <span>AI Assistant</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="gap-1"
+                    onClick={() => setShowAnalyticsInsights(!showAnalyticsInsights)}
+                  >
+                    <BarChart className="h-4 w-4" />
+                    <span>Insights</span>
+                  </Button>
+                </div>
               </CardTitle>
               <CardDescription>Create your post content and preview how it will look</CardDescription>
             </CardHeader>
@@ -151,6 +178,10 @@ const Compose: React.FC = () => {
               <div className="space-y-4">
                 {showAIOptions && (
                   <AIAssistant content={content} setContent={setContent} />
+                )}
+                
+                {showAnalyticsInsights && (
+                  <AnalyticsInsights />
                 )}
                 
                 <Textarea 
@@ -311,7 +342,7 @@ const Compose: React.FC = () => {
                             <Button variant="outline">Cancel</Button>
                           </DialogClose>
                           <DialogClose asChild>
-                            <Button onClick={handleInsertHashtag}>Insert Hashtag</Button>
+                            <Button onClick={handleInsertHashtag}>Insert Mention</Button>
                           </DialogClose>
                         </div>
                       </div>
@@ -366,7 +397,7 @@ const Compose: React.FC = () => {
               <CardDescription>See how your post will appear on each platform</CardDescription>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="twitter">
+              <Tabs defaultValue={selectedPlatforms[0] || "twitter"}>
                 <TabsList className="grid grid-cols-3 mb-4">
                   <TabsTrigger value="twitter" className="gap-2">
                     <Twitter className="h-4 w-4" />
@@ -453,15 +484,30 @@ const Compose: React.FC = () => {
                 <div>
                   <label className="block text-sm font-medium mb-1">Platforms</label>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="gap-1 bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100 hover:text-blue-700">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className={`gap-1 ${selectedPlatforms.includes('twitter') ? 'bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100 hover:text-blue-700' : ''}`}
+                      onClick={() => togglePlatform('twitter')}
+                    >
                       <Twitter className="h-4 w-4" />
                       Twitter
                     </Button>
-                    <Button variant="outline" size="sm" className="gap-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className={`gap-1 ${selectedPlatforms.includes('instagram') ? 'bg-pink-50 border-pink-200 text-pink-600 hover:bg-pink-100 hover:text-pink-700' : ''}`}
+                      onClick={() => togglePlatform('instagram')}
+                    >
                       <Instagram className="h-4 w-4" />
                       Instagram
                     </Button>
-                    <Button variant="outline" size="sm" className="gap-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className={`gap-1 ${selectedPlatforms.includes('facebook') ? 'bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700' : ''}`}
+                      onClick={() => togglePlatform('facebook')}
+                    >
                       <Facebook className="h-4 w-4" />
                       Facebook
                     </Button>
@@ -514,11 +560,15 @@ const Compose: React.FC = () => {
             <Button 
               className="w-full gap-1" 
               onClick={() => {
+                if (selectedPlatforms.length === 0) {
+                  toast.error("Please select at least one platform!");
+                  return;
+                }
                 if (!date || !time) {
                   toast.error("Please select a date and time first!");
                   return;
                 }
-                toast.success(`Post scheduled successfully for ${format(date, "PPP")} at ${time}!`);
+                toast.success(`Post scheduled successfully for ${format(date, "PPP")} at ${time} on ${selectedPlatforms.join(', ')}!`);
               }}
             >
               <SendHorizontal className="h-4 w-4" />
