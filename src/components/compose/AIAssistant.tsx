@@ -209,9 +209,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ content, setContent }) => {
       'general': ['#TrendingNow', '#MustSee', '#2023Trends', '#IndustryLeaders', '#BestPractices']
     };
     
-    const selectedHashtags = hashtagsByTopic[topic] || hashtagsByTopic.general;
-    // Return random 3 hashtags from the list
-    return selectedHashtags.sort(() => 0.5 - Math.random()).slice(0, 3);
+    return (hashtagsByTopic[topic] || hashtagsByTopic.general).sort(() => 0.5 - Math.random()).slice(0, 3);
   };
 
   return (
