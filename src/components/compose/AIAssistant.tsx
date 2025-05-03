@@ -167,7 +167,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ content, setContent }) => {
       let updatedContent = content;
       const existingHashtags = content.match(/#[a-zA-Z0-9]+/g) || [];
       
-      // Fix: Type this properly to avoid the 'never' type issue
+      // Fix: Explicitly type newHashtags as string[] and the tag parameter
       const newHashtags: string[] = hashtags.filter((tag: string) => !existingHashtags.includes(tag));
       
       if (newHashtags.length > 0) {
