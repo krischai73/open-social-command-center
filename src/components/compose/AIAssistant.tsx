@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -166,8 +167,8 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ content, setContent }) => {
       let updatedContent = content;
       const existingHashtags = content.match(/#[a-zA-Z0-9]+/g) || [];
       
-      // Fix: Proper type handling for filtering arrays
-      const newHashtags = hashtags.filter(tag => !existingHashtags.includes(tag));
+      // Fix: Use explicit type for newHashtags to resolve the 'never' type issue
+      const newHashtags: string[] = hashtags.filter((tag: string) => !existingHashtags.includes(tag));
       
       if (newHashtags.length > 0) {
         // If content already ends with hashtags, add more, otherwise add a line break first
