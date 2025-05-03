@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Calendar as CalendarIcon, Twitter, Instagram, Facebook, Image, Link, AtSign, Hash, Clock,
-  Save, SendHorizontal, Sparkles, Wand2, Languages, Trending, FileText, MessageSquare, BrainCircuit
+  Save, SendHorizontal, Sparkles, Wand2, Languages, TrendingUp, FileText, MessageSquare, BrainCircuit
 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -172,7 +172,7 @@ const Compose: React.FC = () => {
                             className="gap-1"
                             onClick={handleTrendingHashtags}
                           >
-                            <Trending className="h-4 w-4" />
+                            <TrendingUp className="h-4 w-4" />
                             <span>Trending Tags</span>
                           </Button>
                         </div>
