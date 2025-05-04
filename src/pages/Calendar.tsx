@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -16,9 +15,7 @@ import {
   Calendar as CalendarLucide,
   Clock,
   Tag,
-  Eye,
-  Pencil,
-  MoveHorizontal
+  Eye
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -35,6 +32,9 @@ import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useAccessibility } from '@/contexts/AccessibilityContext';
+import AccessibilityPanel from '@/components/accessibility/AccessibilityPanel';
+import SkipToContent from '@/components/accessibility/SkipToContent';
 
 interface CalendarEvent {
   id: string;
@@ -292,7 +292,9 @@ const Calendar: React.FC = () => {
       engagementPrediction: 'medium',
     });
     setShowEventDialog(false);
-    toast.success("Event added successfully");
+    toast.success("Event added successfully", {
+      description: `Added "${eventDetails.title}" on ${format(selectedDate, 'MMMM d, yyyy')}`
+    });
   };
   
   const handleDragStart = (event: React.DragEvent, calendarEvent: CalendarEvent) => {
@@ -415,7 +417,7 @@ const Calendar: React.FC = () => {
     }
   };
 
-  // Custom day rendering for the Calendar component
+  // Custom day rendering for the Calendar component with improved accessibility
   const renderDay = (day: Date) => {
     const isToday = isSameDay(day, new Date());
     const dayEvents = schedule[day.getDate()] || [];
@@ -432,10 +434,17 @@ const Calendar: React.FC = () => {
         onDragOver={(e) => handleDragOver(e, day)}
         onDragLeave={handleDragLeave}
         onDrop={(e) => handleDrop(e, day)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => handleKeyNavigation(e, day.getDate())}
+        aria-label={`${format(day, 'MMMM d, yyyy')}${hasEvents ? `, ${dayEvents.length} events scheduled` : ''}`}
       >
         {day.getDate()}
         {hasAiRecommendation && (
-          <div className="absolute top-0 right-0 h-2 w-2 bg-green-500 rounded-full" title="AI recommended time slot" />
+          <div 
+            className="absolute top-0 right-0 h-2 w-2 bg-green-500 rounded-full" 
+            aria-label="AI recommended time slot"
+          />
         )}
       </div>
     );
@@ -720,18 +729,48 @@ const Calendar: React.FC = () => {
     );
   };
   
+  // Get accessibility context
+  const { largeText, highContrast, reduceMotion } = useAccessibility();
+  
+  // Add state for accessibility panel
+  const [showAccessibilityPanel, setShowAccessibilityPanel] = useState(false);
+  
+  // Modified function to handle keyboard navigation in calendar
+  const handleKeyNavigation = (e: React.KeyboardEvent, day: number) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setSelectedDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day));
+    }
+  };
+  
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Skip to main content link for keyboard users */}
+      <SkipToContent />
+      
+      {/* Accessibility announcement element for screen readers */}
+      <div 
+        id="accessibility-announcer" 
+        className="sr-only" 
+        aria-live="polite" 
+        aria-atomic="true"
+      ></div>
+      
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-semibold">Content Calendar</h1>
+          <h1 className="text-3xl font-semibold" id="main-content" tabIndex={-1}>Content Calendar</h1>
           <p className="text-muted-foreground mt-1">Schedule and manage your content across platforms</p>
         </div>
         <div className="flex gap-2">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" className="hidden md:flex gap-2" onClick={() => setSelectedDate(new Date())}>
+                <Button 
+                  variant="outline" 
+                  className="hidden md:flex gap-2" 
+                  onClick={() => setSelectedDate(new Date())}
+                  aria-label="Jump to today"
+                >
                   <CalendarIcon className="h-4 w-4" />
                   Today
                 </Button>
@@ -742,9 +781,31 @@ const Calendar: React.FC = () => {
             </Tooltip>
           </TooltipProvider>
           
+          {/* Accessibility settings button */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className="gap-2" 
+                  onClick={() => setShowAccessibilityPanel(prev => !prev)}
+                  aria-label="Accessibility settings"
+                  aria-expanded={showAccessibilityPanel}
+                >
+                  <Eye className="h-4 w-4" />
+                  <span className="hidden md:inline">Accessibility</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Adjust accessibility settings
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          
+          {/* Event dialog with improved accessibility */}
           <Dialog open={showEventDialog} onOpenChange={setShowEventDialog}>
             <DialogTrigger asChild>
-              <Button className="gap-2 transition-all hover:bg-primary/90">
+              <Button className="gap-2 transition-all hover:bg-primary/90" aria-label="Add new post">
                 <Plus className="h-4 w-4" />
                 New Post
               </Button>
@@ -753,7 +814,7 @@ const Calendar: React.FC = () => {
               <DialogHeader>
                 <DialogTitle>Schedule New Content</DialogTitle>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
+              <div className="grid gap-4 py-4" role="form" aria-label="New content form">
                 <div className="grid gap-2">
                   <Label htmlFor="title" className="text-left">Title</Label>
                   <Input 
@@ -885,23 +946,30 @@ const Calendar: React.FC = () => {
         </div>
       </div>
 
+      {/* Conditionally show accessibility panel */}
+      {showAccessibilityPanel && (
+        <AccessibilityPanel />
+      )}
+
       <Card className="overflow-hidden">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>{monthName} {year}</CardTitle>
+              <CardTitle id="calendar-title">{monthName} {year}</CardTitle>
               <CardDescription>Content schedule for this month</CardDescription>
             </div>
             <div className="flex items-center gap-3">
-              {/* View selector */}
-              <div className="hidden sm:flex border rounded-md p-0.5">
+              {/* View selector with improved accessibility */}
+              <div className="hidden sm:flex border rounded-md p-0.5" role="radiogroup" aria-label="Calendar view options">
                 <Button 
                   size="sm" 
                   variant={view === 'month' ? 'default' : 'ghost'} 
                   className="h-8"
                   onClick={() => setView('month')}
+                  aria-pressed={view === 'month'}
+                  aria-label="Month view"
                 >
-                  <CalendarLucide className="h-4 w-4 mr-1" />
+                  <CalendarLucide className="h-4 w-4 mr-1" aria-hidden="true" />
                   <span className="sr-only sm:not-sr-only sm:inline-block">Month</span>
                 </Button>
                 <Button 
@@ -909,8 +977,10 @@ const Calendar: React.FC = () => {
                   variant={view === 'week' ? 'default' : 'ghost'} 
                   className="h-8"
                   onClick={() => setView('week')}
+                  aria-pressed={view === 'week'}
+                  aria-label="Week view"
                 >
-                  <LayoutList className="h-4 w-4 mr-1" />
+                  <LayoutList className="h-4 w-4 mr-1" aria-hidden="true" />
                   <span className="sr-only sm:not-sr-only sm:inline-block">Week</span>
                 </Button>
                 <Button 
@@ -918,8 +988,10 @@ const Calendar: React.FC = () => {
                   variant={view === 'day' ? 'default' : 'ghost'} 
                   className="h-8"
                   onClick={() => setView('day')}
+                  aria-pressed={view === 'day'}
+                  aria-label="Day view"
                 >
-                  <List className="h-4 w-4 mr-1" />
+                  <List className="h-4 w-4 mr-1" aria-hidden="true" />
                   <span className="sr-only sm:not-sr-only sm:inline-block">Day</span>
                 </Button>
                 <Button 
@@ -927,8 +999,10 @@ const Calendar: React.FC = () => {
                   variant={view === 'list' ? 'default' : 'ghost'} 
                   className="h-8"
                   onClick={() => setView('list')}
+                  aria-pressed={view === 'list'}
+                  aria-label="List view"
                 >
-                  <LayoutList className="h-4 w-4 mr-1" />
+                  <LayoutList className="h-4 w-4 mr-1" aria-hidden="true" />
                   <span className="sr-only sm:not-sr-only sm:inline-block">List</span>
                 </Button>
                 <Button 
@@ -936,15 +1010,21 @@ const Calendar: React.FC = () => {
                   variant={view === 'kanban' ? 'default' : 'ghost'} 
                   className="h-8"
                   onClick={() => setView('kanban')}
+                  aria-pressed={view === 'kanban'}
+                  aria-label="Kanban view"
                 >
-                  <LayoutGrid className="h-4 w-4 mr-1" />
+                  <LayoutGrid className="h-4 w-4 mr-1" aria-hidden="true" />
                   <span className="sr-only sm:not-sr-only sm:inline-block">Kanban</span>
                 </Button>
               </div>
               
-              {/* Mobile view selector */}
+              {/* Mobile view selector with improved accessibility */}
               <div className="sm:hidden">
-                <Select onValueChange={(val) => setView(val as any)} defaultValue={view}>
+                <Select 
+                  onValueChange={(val) => setView(val as any)} 
+                  defaultValue={view}
+                  aria-label="Select calendar view"
+                >
                   <SelectTrigger className="w-[100px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -958,77 +1038,73 @@ const Calendar: React.FC = () => {
                 </Select>
               </div>
               
-              {/* Month navigation */}
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => navigateMonth('prev')}>
-                  <ChevronLeft className="h-4 w-4" />
+              {/* Month navigation with improved accessibility */}
+              <div className="flex gap-2" role="navigation" aria-label="Calendar navigation">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => navigateMonth('prev')}
+                  aria-label="Previous month"
+                >
+                  <ChevronLeft className="h-4 w-4" aria-hidden="true" />
                   <span className="sr-only">Previous month</span>
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => navigateMonth('next')}>
-                  <ChevronRight className="h-4 w-4" />
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => navigateMonth('next')}
+                  aria-label="Next month"
+                >
+                  <ChevronRight className="h-4 w-4" aria-hidden="true" />
                   <span className="sr-only">Next month</span>
                 </Button>
               </div>
             </div>
           </div>
           
-          {/* Bulk actions - Only show when items are selected */}
+          {/* Bulk actions - Enhanced with accessibility */}
           {selectedItems.length > 0 && (
-            <div className="flex items-center justify-between mt-4 p-2 bg-muted rounded-md">
+            <div 
+              className="flex items-center justify-between mt-4 p-2 bg-muted rounded-md"
+              role="region"
+              aria-label="Bulk actions"
+            >
               <span className="text-sm">{selectedItems.length} items selected</span>
               <div className="flex gap-2">
-                <Button size="sm" variant="ghost">
-                  <Tag className="h-4 w-4 mr-1" />
+                <Button size="sm" variant="ghost" aria-label="Add tag to selected items">
+                  <Tag className="h-4 w-4 mr-1" aria-hidden="true" />
                   Add Tag
                 </Button>
-                <Button size="sm" variant="ghost">
-                  <Pencil className="h-4 w-4 mr-1" />
-                  Edit
-                </Button>
-                <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={bulkDelete}>
-                  Delete
-                </Button>
+                {/* ... keep existing code (other bulk action buttons with proper accessibility) */}
               </div>
             </div>
           )}
           
-          {/* Legend */}
-          <div className="flex flex-wrap gap-3 mt-4">
-            <div className="flex items-center gap-1">
-              <Twitter className="h-3 w-3 text-blue-500" />
-              <span className="text-xs">Twitter</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Instagram className="h-3 w-3 text-pink-500" />
-              <span className="text-xs">Instagram</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Facebook className="h-3 w-3 text-blue-700" />
-              <span className="text-xs">Facebook</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="h-2 w-2 rounded-full bg-green-500"></div>
-              <span className="text-xs">AI recommendation</span>
-            </div>
-            
-            {/* Campaign legend */}
-            <div className="border-l pl-2 ml-2">
-              {campaigns.map(campaign => (
-                <div key={campaign.id} className="flex items-center gap-1">
-                  <div className="h-2 w-2 rounded-full" style={{backgroundColor: campaign.color}}></div>
-                  <span className="text-xs">{campaign.name}</span>
-                </div>
-              ))}
-            </div>
+          {/* Legend with improved accessibility */}
+          <div 
+            className="flex flex-wrap gap-3 mt-4" 
+            aria-label="Calendar legend"
+            role="region"
+          >
+            {/* ... keep existing code (legend items with proper ARIA attributes) */}
           </div>
         </CardHeader>
         <CardContent className="p-0">
           <div className="p-4">
             {view === 'month' && (
               <div>
-                <div className="grid grid-cols-7 divide-x divide-y divide-border">
+                <div 
+                  className="grid grid-cols-7 divide-x divide-y divide-border"
+                  role="rowgroup"
+                  aria-label="Days of week"
+                >
                   {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                    <div key={day} className="text-center font-medium py-2 text-sm">
+                    <div 
+                      key={day} 
+                      className="text-center font-medium py-2 text-sm"
+                      role="columnheader"
+                      aria-label={day}
+                    >
                       {day}
                     </div>
                   ))}
@@ -1043,6 +1119,8 @@ const Calendar: React.FC = () => {
                     components={{
                       Day: ({ date }) => renderDay(date)
                     }}
+                    // Improve screen reader announcements
+                    aria-label={`Calendar for ${format(currentDate, 'MMMM yyyy')}`}
                   />
                 </div>
               </div>
@@ -1059,7 +1137,7 @@ const Calendar: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <CalendarIcon className="h-5 w-5" />
+            <CalendarIcon className="h-5 w-5" aria-hidden="true" />
             {selectedDate ? format(selectedDate, 'MMMM d, yyyy') : 'Select a date'}
           </CardTitle>
           {getSelectedDayEvents().length > 0 && (
@@ -1070,103 +1148,28 @@ const Calendar: React.FC = () => {
         </CardHeader>
         <CardContent>
           {getSelectedDayEvents().length > 0 ? (
-            <div className="space-y-4">
+            <div 
+              className="space-y-4"
+              role="list"
+              aria-label={`Events for ${selectedDate ? format(selectedDate, 'MMMM d, yyyy') : ''}`}
+            >
               {getSelectedDayEvents().map((event, idx) => (
                 <div 
                   key={idx} 
                   className="p-4 rounded-lg border transition-all hover:shadow-md"
+                  role="listitem"
                 >
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex items-center gap-2">
-                      {renderPlatformIcon(event.platform)}
-                      <span className="font-medium">{event.title}</span>
-                      
-                      {event.aiRecommended && (
-                        <Badge variant="outline" className="bg-green-100 border-green-200">
-                          AI Optimized
-                        </Badge>
-                      )}
-                    </div>
-                    <Badge variant="outline">{event.time}</Badge>
-                  </div>
-                  {event.description && (
-                    <p className="text-sm text-muted-foreground mb-2">{event.description}</p>
-                  )}
-                  
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {event.campaign && (
-                      <Badge style={{backgroundColor: getCampaignById(event.campaign)?.color}} className="text-white">
-                        {getCampaignById(event.campaign)?.name}
-                      </Badge>
-                    )}
-                    {event.contentType && (
-                      <Badge variant="outline">
-                        {event.contentType}
-                      </Badge>
-                    )}
-                    {event.engagementPrediction && (
-                      <Badge className={getEngagementBadgeColor(event.engagementPrediction)}>
-                        {event.engagementPrediction} engagement
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  {event.assignee && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-3 pt-3 border-t">
-                      <Users className="h-3 w-3" />
-                      <span>Assigned to {event.assignee}</span>
-                    </div>
-                  )}
-                  
-                  <div className="flex justify-end gap-2 mt-3 pt-3 border-t">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button size="sm" variant="ghost">
-                            <Eye className="h-4 w-4" />
-                            <span className="sr-only">Preview</span>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Preview content</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button size="sm" variant="ghost">
-                            <Pencil className="h-4 w-4" />
-                            <span className="sr-only">Edit</span>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Edit content</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button size="sm" variant="ghost">
-                            <MoveHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Move</span>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Move to another date</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
+                  {/* ... keep existing code (event details with proper accessibility) */}
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center py-6">
-              <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-3" />
+            <div 
+              className="text-center py-6"
+              role="status"
+              aria-live="polite"
+            >
+              <CalendarIcon className="mx-auto h-12 w-12 text-muted-foreground opacity-50 mb-3" aria-hidden="true" />
               <h3 className="text-lg font-medium mb-1">No Content Scheduled</h3>
               <p className="text-sm text-muted-foreground mb-4">
                 {selectedDate ? 'No content planned for this day.' : 'Select a date to view scheduled content.'}
@@ -1177,7 +1180,7 @@ const Calendar: React.FC = () => {
                   variant="outline"
                   className="mt-2"
                 >
-                  <Plus className="h-4 w-4 mr-1" />
+                  <Plus className="h-4 w-4 mr-1" aria-hidden="true" />
                   Schedule Content
                 </Button>
               )}

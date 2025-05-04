@@ -1,0 +1,117 @@
+
+:root {
+  /* Base sizing variables - will be modified by accessibility settings */
+  --base-font-size: 16px;
+  --base-line-height: 1.5;
+  --base-transition-duration: 0.2s;
+  
+  /* Base colors - will be modified by high contrast mode */
+  --contrast-background: #ffffff;
+  --contrast-foreground: #000000;
+  --contrast-primary: #0066cc;
+  --contrast-secondary: #6b21a8;
+  --contrast-accent: #f59e0b;
+  --contrast-muted: #6b7280;
+  --contrast-border: #d1d5db;
+}
+
+/* Large text mode */
+.large-text {
+  --base-font-size: 20px;
+  
+  /* Apply larger base size to everything */
+  font-size: var(--base-font-size);
+}
+
+.large-text h1 {
+  font-size: 2.5rem;
+}
+
+.large-text h2 {
+  font-size: 2rem;
+}
+
+.large-text h3 {
+  font-size: 1.75rem;
+}
+
+.large-text h4 {
+  font-size: 1.5rem;
+}
+
+.large-text button,
+.large-text input,
+.large-text select,
+.large-text textarea {
+  font-size: 1.1rem;
+}
+
+/* High contrast mode */
+.high-contrast {
+  --contrast-background: #000000;
+  --contrast-foreground: #ffffff;
+  --contrast-primary: #4cc2ff;
+  --contrast-secondary: #d8b4fe;
+  --contrast-accent: #fbbf24;
+  --contrast-muted: #d1d5db;
+  --contrast-border: #6b7280;
+  
+  color: var(--contrast-foreground);
+  background-color: var(--contrast-background);
+}
+
+.high-contrast .border {
+  border-color: var(--contrast-border);
+}
+
+.high-contrast .bg-muted,
+.high-contrast .bg-accent,
+.high-contrast .bg-secondary {
+  background-color: var(--contrast-background);
+  border: 2px solid var(--contrast-border);
+}
+
+.high-contrast button {
+  border: 2px solid var(--contrast-border);
+}
+
+.high-contrast a,
+.high-contrast button {
+  text-decoration: underline;
+}
+
+/* Reduce motion */
+.reduce-motion * {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Focus styles for keyboard navigation */
+*:focus-visible {
+  outline: 3px solid var(--contrast-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Apply outline to keyboard focus states but not mouse focus */
+.js-focus-visible :focus:not(.focus-visible) {
+  outline: none;
+}
+
+/* Skip to content link - only visible when focused */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--contrast-primary);
+  color: white;
+  padding: 8px;
+  z-index: 100;
+  transition: top 0.2s;
+}
+
+.skip-link:focus {
+  top: 0;
+}
