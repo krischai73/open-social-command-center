@@ -1,8 +1,9 @@
+
 import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { Copy, Check, Magic, Wand2, Sparkles, Hash } from 'lucide-react';
+import { Copy, Check, Wand, Wand2, Sparkles, Hash } from 'lucide-react';
 import { toast } from '@/components/ui/sonner';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -47,9 +48,9 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ content, setContent }) => {
       // Generate some hashtags
       const generatedHashtags = hashtags
         .split(',')
-        .map(tag => tag.trim())
-        .filter(tag => tag)
-        .map(tag => `#${tag.replace(/\s+/g, '')}`)
+        .map((tag: string) => tag.trim())
+        .filter((tag: string) => tag)
+        .map((tag: string) => `#${tag.replace(/\s+/g, '')}`)
         .join(' ');
 
       aiOutput = `${aiOutput} ${generatedHashtags}`;
@@ -113,32 +114,32 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ content, setContent }) => {
   }, [content]);
 
   const copyToComposer = () => {
-    setContent(prevContent => prevContent + ' ' + generatedContent);
+    setContent(generatedContent);
     toast.success("Content copied to composer!");
   };
 
   const addTone = () => {
-    setContent(prevContent => prevContent + ' [Tone: ' + tone + ']');
+    setContent(`${content} [Tone: ${tone}]`);
     toast.success("Tone added to composer!");
   };
 
   const addLength = () => {
-    setContent(prevContent => prevContent + ' [Length: ' + length + ']');
+    setContent(`${content} [Length: ${length}]`);
     toast.success("Length added to composer!");
   };
 
   const addKeywords = () => {
-    setContent(prevContent => prevContent + ' [Keywords: ' + keywords + ']');
+    setContent(`${content} [Keywords: ${keywords}]`);
     toast.success("Keywords added to composer!");
   };
 
   const addTargetAudience = () => {
-    setContent(prevContent => prevContent + ' [Target Audience: ' + targetAudience + ']');
+    setContent(`${content} [Target Audience: ${targetAudience}]`);
     toast.success("Target audience added to composer!");
   };
 
   const addHashtags = () => {
-    setContent(prevContent => prevContent + ' ' + hashtags);
+    setContent(`${content} ${hashtags}`);
     toast.success("Hashtags added to composer!");
   };
 
@@ -155,7 +156,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ content, setContent }) => {
                 value={tone}
                 onChange={(e) => setTone(e.target.value)}
               />
-              <Button variant="outline" size="xs" className="mt-2" onClick={addTone}>
+              <Button variant="outline" size="sm" className="mt-2" onClick={addTone}>
                 Add Tone
               </Button>
             </div>
@@ -167,7 +168,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ content, setContent }) => {
                 value={length}
                 onChange={(e) => setLength(e.target.value)}
               />
-              <Button variant="outline" size="xs" className="mt-2" onClick={addLength}>
+              <Button variant="outline" size="sm" className="mt-2" onClick={addLength}>
                 Add Length
               </Button>
             </div>
@@ -182,7 +183,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ content, setContent }) => {
                 value={keywords}
                 onChange={(e) => setKeywords(e.target.value)}
               />
-              <Button variant="outline" size="xs" className="mt-2" onClick={addKeywords}>
+              <Button variant="outline" size="sm" className="mt-2" onClick={addKeywords}>
                 Add Keywords
               </Button>
             </div>
@@ -194,7 +195,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ content, setContent }) => {
                 value={targetAudience}
                 onChange={(e) => setTargetAudience(e.target.value)}
               />
-              <Button variant="outline" size="xs" className="mt-2" onClick={addTargetAudience}>
+              <Button variant="outline" size="sm" className="mt-2" onClick={addTargetAudience}>
                 Add Target Audience
               </Button>
             </div>
@@ -208,7 +209,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ content, setContent }) => {
               value={hashtags}
               onChange={(e) => setHashtags(e.target.value)}
             />
-            <Button variant="outline" size="xs" className="mt-2" onClick={addHashtags}>
+            <Button variant="outline" size="sm" className="mt-2" onClick={addHashtags}>
               Add Hashtags
             </Button>
           </div>
@@ -227,7 +228,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ content, setContent }) => {
                 </>
               ) : (
                 <>
-                  <Magic className="h-4 w-4" />
+                  <Wand className="h-4 w-4" />
                   Generate Content
                 </>
               )}

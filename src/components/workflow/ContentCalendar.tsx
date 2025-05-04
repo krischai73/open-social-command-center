@@ -1,486 +1,405 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
-import { Calendar } from '@/components/ui/calendar';
-import { ChevronLeft, ChevronRight, Plus, Twitter, Instagram, Facebook, FileText, Clock, Calendar as CalendarIcon, User } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { 
+  Calendar as CalendarComponent,
+  CalendarProps 
+} from '@/components/ui/calendar';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { format, addDays, isSameDay, isAfter, parseISO, isToday, isSameMonth } from 'date-fns';
-import { toast } from '@/components/ui/sonner';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
-// Sample content calendar data
-const initialEvents = [
-  {
-    id: 1,
-    title: "Product Launch Tweet",
-    description: "Announcing the new feature release",
-    platform: "twitter",
-    date: "2024-05-05T09:30:00",
-    status: "scheduled",
-    author: "Jane Cooper"
-  },
-  {
-    id: 2,
-    title: "Company Culture Post",
-    description: "Behind the scenes at our quarterly meeting",
-    platform: "instagram",
-    date: "2024-05-06T12:00:00",
-    status: "draft",
-    author: "Wade Warren"
-  },
-  {
-    id: 3,
-    title: "Industry Report",
-    description: "Sharing our annual industry insights report",
-    platform: "linkedin",
-    date: "2024-05-08T14:45:00",
-    status: "scheduled",
-    author: "Cameron Williamson"
-  },
-  {
-    id: 4,
-    title: "Customer Spotlight",
-    description: "Featuring our customer success story",
-    platform: "facebook",
-    date: "2024-05-10T10:15:00",
-    status: "scheduled",
-    author: "Esther Howard"
-  },
-  {
-    id: 5,
-    title: "Product Tips Thread",
-    description: "5 tips to get the most out of our product",
-    platform: "twitter",
-    date: "2024-05-12T11:00:00",
-    status: "draft",
-    author: "Jane Cooper"
-  },
-  {
-    id: 6,
-    title: "Team Introduction",
-    description: "Meet the engineering team behind our latest release",
-    platform: "instagram",
-    date: "2024-05-15T16:30:00",
-    status: "scheduled",
-    author: "Wade Warren"
-  }
-];
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { format, isSameDay } from 'date-fns';
+import { 
+  Instagram, 
+  Twitter, 
+  Facebook, 
+  Calendar as CalendarIcon, 
+  Clock, 
+  Edit,
+  Trash,
+  User,
+  Calendar,
+  Plus,
+  Check,
+  X
+} from 'lucide-react';
 
 interface ContentEvent {
-  id: number;
+  id: string;
+  date: Date;
   title: string;
   description: string;
-  platform: string;
-  date: string;
-  status: string;
-  author: string;
+  platform: 'twitter' | 'instagram' | 'facebook' | 'all';
+  status: 'draft' | 'scheduled' | 'published';
+  assignedTo?: string;
 }
 
-const ContentCalendar: React.FC = () => {
-  const [events, setEvents] = useState<ContentEvent[]>(initialEvents);
-  const [date, setDate] = useState<Date>(new Date());
+const ContentCalendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [selectedEvent, setSelectedEvent] = useState<ContentEvent | null>(null);
-  const [newEvent, setNewEvent] = useState({
-    title: '',
-    description: '',
+  const [events, setEvents] = useState<ContentEvent[]>([
+    {
+      id: '1',
+      date: new Date(),
+      title: 'Product Launch Announcement',
+      description: 'Announcing our newest product feature release with promotional graphics.',
+      platform: 'all',
+      status: 'scheduled',
+      assignedTo: 'Sarah Johnson'
+    },
+    {
+      id: '2',
+      date: new Date(),
+      title: 'Industry Insights Blog',
+      description: 'Share latest blog post about industry trends.',
+      platform: 'twitter',
+      status: 'draft',
+      assignedTo: 'Michael Chen'
+    },
+    {
+      id: '3',
+      date: new Date(Date.now() + 86400000), // Tomorrow
+      title: 'Customer Spotlight',
+      description: 'Feature customer testimonial with quote and product photos.',
+      platform: 'instagram',
+      status: 'scheduled',
+      assignedTo: 'Jessica Williams'
+    }
+  ]);
+  const [showAddEventDialog, setShowAddEventDialog] = useState(false);
+  const [newEvent, setNewEvent] = useState<Partial<ContentEvent>>({
+    date: new Date(),
     platform: 'twitter',
-    date: '',
-    time: '',
-    author: 'You'
+    status: 'draft'
   });
-  
-  // Handle event creation
-  const handleCreateEvent = () => {
-    if (!newEvent.title || !newEvent.date || !newEvent.time) {
-      toast.error("Please fill in all required fields");
+
+  const handleDateSelect = (date: Date | undefined) => {
+    setSelectedDate(date);
+  };
+
+  const getEventsForSelectedDate = () => {
+    if (!selectedDate) return [];
+    return events.filter(event => isSameDay(event.date, selectedDate));
+  };
+
+  const handleAddEvent = () => {
+    if (!newEvent.title || !newEvent.description || !newEvent.date) {
       return;
     }
 
-    const event = {
-      id: events.length + 1,
-      title: newEvent.title,
-      description: newEvent.description,
-      platform: newEvent.platform,
-      date: `${newEvent.date}T${newEvent.time}:00`,
-      status: "draft",
-      author: newEvent.author
+    const event: ContentEvent = {
+      id: Math.random().toString(36).substring(2, 9),
+      date: newEvent.date || new Date(),
+      title: newEvent.title || '',
+      description: newEvent.description || '',
+      platform: newEvent.platform as ContentEvent['platform'] || 'twitter',
+      status: newEvent.status as ContentEvent['status'] || 'draft',
+      assignedTo: newEvent.assignedTo
     };
 
     setEvents([...events, event]);
+    setShowAddEventDialog(false);
     setNewEvent({
-      title: '',
-      description: '',
+      date: selectedDate,
       platform: 'twitter',
-      date: '',
-      time: '',
-      author: 'You'
+      status: 'draft'
     });
-    toast.success("Event created successfully!");
   };
 
-  // Filter events for the selected date
-  const eventsForSelectedDate = selectedDate 
-    ? events.filter(event => isSameDay(parseISO(event.date), selectedDate))
-    : [];
-
-  // Handle date navigation
-  const handlePreviousMonth = () => {
-    const previousMonth = new Date(date);
-    previousMonth.setMonth(date.getMonth() - 1);
-    setDate(previousMonth);
+  const handleDeleteEvent = (id: string) => {
+    setEvents(events.filter(event => event.id !== id));
   };
 
-  const handleNextMonth = () => {
-    const nextMonth = new Date(date);
-    nextMonth.setMonth(date.getMonth() + 1);
-    setDate(nextMonth);
-  };
-
-  // Platform icon mapping
-  const getPlatformIcon = (platform: string) => {
-    switch(platform) {
+  const renderPlatformIcon = (platform: string) => {
+    switch (platform) {
       case 'twitter':
         return <Twitter className="h-4 w-4 text-blue-500" />;
       case 'instagram':
         return <Instagram className="h-4 w-4 text-pink-500" />;
       case 'facebook':
-        return <Facebook className="h-4 w-4 text-indigo-500" />;
+        return <Facebook className="h-4 w-4 text-blue-700" />;
+      case 'all':
+        return (
+          <div className="flex -space-x-1">
+            <Twitter className="h-4 w-4 text-blue-500" />
+            <Instagram className="h-4 w-4 text-pink-500" />
+            <Facebook className="h-4 w-4 text-blue-700" />
+          </div>
+        );
       default:
-        return <FileText className="h-4 w-4" />;
+        return null;
     }
   };
 
-  const getPlatformClass = (platform: string) => {
-    switch(platform) {
-      case 'twitter':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'instagram':
-        return 'bg-pink-50 text-pink-700 border-pink-200';
-      case 'facebook':
-        return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+  const renderStatusBadge = (status: string) => {
+    switch (status) {
+      case 'draft':
+        return <Badge variant="outline">Draft</Badge>;
+      case 'scheduled':
+        return <Badge variant="secondary">Scheduled</Badge>;
+      case 'published':
+        return <Badge variant="default">Published</Badge>;
       default:
-        return 'bg-gray-50 text-gray-700 border-gray-200';
+        return null;
     }
   };
 
-  // Calculate event count for each day to show in the calendar
-  const getDayEventCount = (day: Date) => {
-    return events.filter(event => isSameDay(parseISO(event.date), day)).length;
+  // Custom day renderer for the calendar to show event indicators
+  const renderCalendarDay = (day: Date, selectedDays: Date[], properties: any) => {
+    const dayEvents = events.filter(event => isSameDay(event.date, day));
+    const hasEvents = dayEvents.length > 0;
+    
+    return (
+      <div
+        {...properties}
+        className={`relative ${properties.className}`}
+      >
+        {properties.children}
+        {hasEvents && (
+          <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex gap-0.5">
+            {dayEvents.slice(0, 3).map((_, i) => (
+              <div key={i} className="h-1 w-1 rounded-full bg-primary" />
+            ))}
+            {dayEvents.length > 3 && (
+              <div className="h-1 w-1 rounded-full bg-primary opacity-50" />
+            )}
+          </div>
+        )}
+      </div>
+    );
   };
-  
+
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-medium">Content Calendar</h3>
-          <p className="text-sm text-muted-foreground">
-            Schedule and visualize your content posting plan
-          </p>
-        </div>
-        <Dialog>
+      <div className="flex justify-between">
+        <h2 className="text-2xl font-semibold">Content Calendar</h2>
+        <Dialog open={showAddEventDialog} onOpenChange={setShowAddEventDialog}>
           <DialogTrigger asChild>
             <Button size="sm" className="gap-1">
-              <Plus className="h-4 w-4" /> Add Content
+              <Plus className="h-4 w-4" />
+              Add Content
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Schedule New Content</DialogTitle>
-              <DialogDescription>
-                Add new content to your publishing calendar
-              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="event-title">Title</Label>
                 <Input 
                   id="event-title" 
-                  placeholder="Enter content title"
-                  value={newEvent.title}
-                  onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
+                  placeholder="Enter content title" 
+                  value={newEvent.title || ''}
+                  onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                 />
               </div>
+              
               <div className="space-y-2">
-                <Label htmlFor="event-description">Description</Label>
+                <Label htmlFor="event-desc">Description</Label>
                 <Textarea 
-                  id="event-description" 
+                  id="event-desc" 
                   placeholder="Enter content description"
-                  value={newEvent.description}
-                  onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
+                  value={newEvent.description || ''}
+                  onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
                 />
               </div>
+              
               <div className="space-y-2">
-                <Label htmlFor="event-platform">Platform</Label>
-                <Select 
-                  value={newEvent.platform} 
-                  onValueChange={(value) => setNewEvent({...newEvent, platform: value})}
-                >
-                  <SelectTrigger id="event-platform">
-                    <SelectValue placeholder="Select platform" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="twitter">Twitter</SelectItem>
-                    <SelectItem value="instagram">Instagram</SelectItem>
-                    <SelectItem value="facebook">Facebook</SelectItem>
-                    <SelectItem value="linkedin">LinkedIn</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="event-date">Date</Label>
-                  <Input 
-                    id="event-date" 
-                    type="date"
-                    value={newEvent.date}
-                    onChange={(e) => setNewEvent({...newEvent, date: e.target.value})}
-                  />
+                <Label>Platform</Label>
+                <div className="flex gap-2">
+                  <Button 
+                    type="button"
+                    variant={newEvent.platform === 'twitter' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setNewEvent({ ...newEvent, platform: 'twitter' })}
+                  >
+                    <Twitter className="h-4 w-4 mr-1" />
+                    Twitter
+                  </Button>
+                  <Button 
+                    type="button"
+                    variant={newEvent.platform === 'instagram' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setNewEvent({ ...newEvent, platform: 'instagram' })}
+                  >
+                    <Instagram className="h-4 w-4 mr-1" />
+                    Instagram
+                  </Button>
+                  <Button 
+                    type="button"
+                    variant={newEvent.platform === 'facebook' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setNewEvent({ ...newEvent, platform: 'facebook' })}
+                  >
+                    <Facebook className="h-4 w-4 mr-1" />
+                    Facebook
+                  </Button>
+                  <Button 
+                    type="button"
+                    variant={newEvent.platform === 'all' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setNewEvent({ ...newEvent, platform: 'all' })}
+                  >
+                    All
+                  </Button>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="event-time">Time</Label>
-                  <Input 
-                    id="event-time" 
-                    type="time"
-                    value={newEvent.time}
-                    onChange={(e) => setNewEvent({...newEvent, time: e.target.value})}
-                  />
-                </div>
               </div>
+              
               <div className="space-y-2">
-                <Label htmlFor="event-assignee">Assign To</Label>
-                <Select 
-                  value={newEvent.author} 
-                  onValueChange={(value) => setNewEvent({...newEvent, author: value})}
-                >
-                  <SelectTrigger id="event-assignee">
-                    <SelectValue placeholder="Select team member" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="You">You</SelectItem>
-                    <SelectItem value="Jane Cooper">Jane Cooper</SelectItem>
-                    <SelectItem value="Wade Warren">Wade Warren</SelectItem>
-                    <SelectItem value="Cameron Williamson">Cameron Williamson</SelectItem>
-                    <SelectItem value="Esther Howard">Esther Howard</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label>Status</Label>
+                <div className="flex gap-2">
+                  <Button 
+                    type="button"
+                    variant={newEvent.status === 'draft' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setNewEvent({ ...newEvent, status: 'draft' })}
+                  >
+                    Draft
+                  </Button>
+                  <Button 
+                    type="button"
+                    variant={newEvent.status === 'scheduled' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setNewEvent({ ...newEvent, status: 'scheduled' })}
+                  >
+                    Scheduled
+                  </Button>
+                </div>
               </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <DialogClose asChild>
-                  <Button variant="outline">Cancel</Button>
-                </DialogClose>
-                <DialogClose asChild>
-                  <Button onClick={handleCreateEvent}>Schedule Content</Button>
-                </DialogClose>
+              
+              <div className="space-y-2">
+                <Label htmlFor="event-assigned">Assigned To</Label>
+                <Input 
+                  id="event-assigned" 
+                  placeholder="Enter team member name"
+                  value={newEvent.assignedTo || ''}
+                  onChange={(e) => setNewEvent({ ...newEvent, assignedTo: e.target.value })}
+                />
+              </div>
+              
+              <div className="flex justify-end gap-2 mt-4">
+                <Button variant="outline" onClick={() => setShowAddEventDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleAddEvent}>
+                  Add Content
+                </Button>
               </div>
             </div>
           </DialogContent>
         </Dialog>
       </div>
       
-      <Separator />
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="md:col-span-2">
+      <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+        <Card className="md:col-span-3">
           <CardContent className="pt-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-medium">{format(date, 'MMMM yyyy')}</h3>
-              <div className="flex gap-1">
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  className="h-8 w-8"
-                  onClick={handlePreviousMonth}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  className="h-8 w-8"
-                  onClick={handleNextMonth}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            
-            <Calendar
+            <CalendarComponent
               mode="single"
               selected={selectedDate}
-              onSelect={setSelectedDate}
-              month={date}
-              onMonthChange={setDate}
+              onSelect={handleDateSelect}
               className="rounded-md border"
               components={{
-                Day: ({ day, ...props }) => {
-                  const eventCount = getDayEventCount(day);
-                  const hasEvents = eventCount > 0;
-                  
-                  // Today's date style
-                  const isCurrentDay = isToday(day);
-                  // Past dates style
-                  const isPastDay = isAfter(new Date(), day) && !isToday(day);
-                  // Date not in current month
-                  const isOutsideMonth = !isSameMonth(day, date);
-                  
-                  return (
-                    <div
-                      {...props}
-                      className={`relative h-9 w-9 p-0 font-normal aria-selected:opacity-100 ${
-                        isPastDay ? 'text-muted-foreground' : ''
-                      } ${isOutsideMonth ? 'text-muted-foreground/50' : ''}`}
-                    >
-                      <div className={`flex h-full w-full items-center justify-center rounded-full ${
-                        isCurrentDay ? 'bg-primary text-primary-foreground' : ''
-                      }`}>
-                        {format(day, 'd')}
-                      </div>
-                      {hasEvents && (
-                        <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2">
-                          <div className="flex items-center gap-0.5">
-                            {eventCount > 3 ? (
-                              <Badge variant="secondary" className="h-1.5 px-1 py-0 text-[8px]">{eventCount}</Badge>
-                            ) : (
-                              Array.from({ length: eventCount }).map((_, i) => (
-                                <div 
-                                  key={i} 
-                                  className="h-1 w-1 rounded-full bg-primary"
-                                ></div>
-                              ))
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )
-                }
+                // Using the modified component structure
+                Day: (props: any) => renderCalendarDay(props.date, props.selected, props)
               }}
             />
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="md:col-span-4">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-medium">
+              <h3 className="font-medium flex items-center gap-1">
+                <CalendarIcon className="h-4 w-4" />
                 {selectedDate ? format(selectedDate, 'MMMM d, yyyy') : 'Select a date'}
               </h3>
-              {isToday(selectedDate!) && (
-                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                  Today
-                </Badge>
+              {selectedDate && (
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => {
+                    setNewEvent({
+                      ...newEvent,
+                      date: selectedDate
+                    });
+                    setShowAddEventDialog(true);
+                  }}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add
+                </Button>
               )}
             </div>
             
-            {eventsForSelectedDate.length > 0 ? (
-              <div className="space-y-3">
-                {eventsForSelectedDate.map(event => (
-                  <div 
-                    key={event.id} 
-                    className={`border rounded-lg p-3 cursor-pointer ${getPlatformClass(event.platform)}`}
-                    onClick={() => setSelectedEvent(event)}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        {getPlatformIcon(event.platform)}
-                        <Badge variant={event.status === 'scheduled' ? 'default' : 'outline'}>
-                          {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
-                        </Badge>
+            <ScrollArea className="h-[400px] pr-4">
+              {getEventsForSelectedDate().length > 0 ? (
+                <div className="space-y-3">
+                  {getEventsForSelectedDate().map((event) => (
+                    <div key={event.id} className="border rounded-lg p-3 relative">
+                      <div className="absolute right-2 top-2 flex gap-1">
+                        <Button variant="ghost" size="icon" className="h-6 w-6">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-6 w-6 text-destructive"
+                          onClick={() => handleDeleteEvent(event.id)}
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <span className="text-xs">
-                        {format(parseISO(event.date), 'h:mm a')}
-                      </span>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-1">
+                          {renderPlatformIcon(event.platform)}
+                          <span className="font-medium">{event.title}</span>
+                        </div>
+                        {renderStatusBadge(event.status)}
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-2">{event.description}</p>
+                      {event.assignedTo && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <User className="h-3 w-3" />
+                          <span>{event.assignedTo}</span>
+                        </div>
+                      )}
                     </div>
-                    <h4 className="font-medium">{event.title}</h4>
-                    <p className="text-sm mt-1">{event.description}</p>
-                    <div className="flex items-center gap-2 mt-2 text-xs">
-                      <User className="h-3 w-3" />
-                      <span>{event.author}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <CalendarIcon className="h-12 w-12 text-muted-foreground/30 mb-3" />
-                {selectedDate ? (
-                  <>
-                    <p className="text-muted-foreground">No content scheduled for this date</p>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                  <Calendar className="h-8 w-8 text-muted-foreground mb-2" />
+                  <h3 className="font-medium">No Content Scheduled</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedDate ? 'No content planned for this day.' : 'Select a date to view or add content.'}
+                  </p>
+                  {selectedDate && (
                     <Button 
-                      variant="link" 
+                      variant="outline" 
                       size="sm" 
-                      className="mt-2"
+                      className="mt-4" 
                       onClick={() => {
-                        const dialogTrigger = document.querySelector('[data-state="closed"]') as HTMLButtonElement;
-                        if (dialogTrigger) dialogTrigger.click();
+                        setNewEvent({
+                          ...newEvent,
+                          date: selectedDate
+                        });
+                        setShowAddEventDialog(true);
                       }}
                     >
-                      + Add content
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Content
                     </Button>
-                  </>
-                ) : (
-                  <p className="text-muted-foreground">Select a date to view scheduled content</p>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              )}
+            </ScrollArea>
           </CardContent>
         </Card>
       </div>
-      
-      {selectedEvent && (
-        <Dialog open={!!selectedEvent} onOpenChange={(open) => !open && setSelectedEvent(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{selectedEvent.title}</DialogTitle>
-              <DialogDescription>
-                Scheduled for {format(parseISO(selectedEvent.date), 'MMMM d, yyyy h:mm a')}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Badge variant="outline" className={getPlatformClass(selectedEvent.platform)}>
-                  {getPlatformIcon(selectedEvent.platform)}
-                  <span className="ml-1">{selectedEvent.platform.charAt(0).toUpperCase() + selectedEvent.platform.slice(1)}</span>
-                </Badge>
-                <Badge variant={selectedEvent.status === 'scheduled' ? 'default' : 'outline'}>
-                  {selectedEvent.status.charAt(0).toUpperCase() + selectedEvent.status.slice(1)}
-                </Badge>
-              </div>
-              
-              <div className="space-y-1">
-                <p className="font-medium text-sm">Description</p>
-                <p className="text-muted-foreground text-sm">{selectedEvent.description}</p>
-              </div>
-              
-              <div className="space-y-1">
-                <p className="font-medium text-sm">Assigned To</p>
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-6 w-6">
-                    <AvatarFallback className="text-[10px]">
-                      {selectedEvent.author.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm">{selectedEvent.author}</span>
-                </div>
-              </div>
-              
-              <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline" onClick={() => setSelectedEvent(null)}>Close</Button>
-                <Button>Edit Content</Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
     </div>
   );
 };
