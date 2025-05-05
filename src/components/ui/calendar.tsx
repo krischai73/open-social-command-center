@@ -62,12 +62,12 @@ function Calendar({
         ),
         ...components,
       }}
-      // Set proper ARIA labels for navigation
+      // Set proper ARIA labels for navigation - fixed to use functions instead of strings
       labels={{
         labelMonthDropdown: () => "Select month",
         labelYearDropdown: () => "Select year",
-        labelNext: "Go to next month",
-        labelPrevious: "Go to previous month",
+        labelNext: () => "Go to next month",
+        labelPrevious: () => "Go to previous month",
         labelDay: (day) => `${day.getDate()}, ${day.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}`,
       }}
       {...props}
