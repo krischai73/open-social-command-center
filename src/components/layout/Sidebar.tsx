@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Calendar, BarChart2, Settings, Target, MessageSquare, Globe, Plus, Bell } from 'lucide-react';
+import { Home, Calendar, BarChart2, Settings, Target, MessageSquare, Globe, Plus, Bell, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -104,6 +104,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
             icon={Target} 
             title="Campaigns" 
             isActive={location.pathname === '/campaigns'} 
+            isCollapsed={!isOpen} 
+          />
+          <NavItem 
+            to="/growth" 
+            icon={TrendingUp} 
+            title="Growth" 
+            isActive={location.pathname === '/growth'} 
             isCollapsed={!isOpen} 
           />
         </nav>

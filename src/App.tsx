@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,6 +13,7 @@ import PlatformsPage from "./pages/Platforms";
 import MessagesPage from "./pages/Messages";
 import Analytics from "./pages/Analytics";
 import Campaigns from "./pages/Campaigns";
+import Growth from "./pages/Growth";
 import { useEffect } from "react";
 
 const queryClient = new QueryClient({
@@ -62,6 +62,7 @@ const App = () => {
             <Route path="/messages" element={<MainLayout><MessagesPage /></MainLayout>} />
             <Route path="/analytics" element={<MainLayout><Analytics /></MainLayout>} />
             <Route path="/campaigns" element={<MainLayout><Campaigns /></MainLayout>} />
+            <Route path="/growth" element={<MainLayout><Growth /></MainLayout>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
