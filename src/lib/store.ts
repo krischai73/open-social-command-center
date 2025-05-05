@@ -33,7 +33,7 @@ export const useAppStore = create<AppState>()(
           },
         })),
       isOffline: false,
-      setIsOffline: (offline) => set({ isOffline }),
+      setIsOffline: (offline) => set({ isOffline: offline }),
     }),
     {
       name: 'social-command-storage',

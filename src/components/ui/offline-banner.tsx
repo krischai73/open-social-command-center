@@ -22,7 +22,9 @@ export const OfflineBanner = () => {
     window.addEventListener('offline', handleOffline);
     
     // Initial check
-    setIsOffline(!navigator.onLine);
+    if (typeof navigator !== 'undefined') {
+      setIsOffline(!navigator.onLine);
+    }
     
     return () => {
       window.removeEventListener('online', handleOnline);
