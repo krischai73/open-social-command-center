@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,8 +8,8 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Shield, Key, ShieldAlert, ShieldCheck, LockKeyhole, Smartphone } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Shield, Key, ShieldCheck, LockKeyhole, Smartphone } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from '@/components/ui/sonner';
 
@@ -66,6 +67,10 @@ export const SecuritySettings: React.FC = () => {
     }
     toast.success('OTP verified successfully!');
     setOtp('');
+  };
+
+  const handleOtpValueChange = (value: string) => {
+    setOtp(value);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -152,32 +157,16 @@ export const SecuritySettings: React.FC = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="otp">Verify OTP</Label>
-              <InputOTPGroup>
-                <InputOTPSlot
-                  maxLength={1}
-                  onChange={(e) => setOtp(e.target.value)}
-                />
-                <InputOTPSlot
-                  maxLength={1}
-                  onChange={(e) => setOtp(e.target.value)}
-                />
-                <InputOTPSlot
-                  maxLength={1}
-                  onChange={(e) => setOtp(e.target.value)}
-                />
-                <InputOTPSlot
-                  maxLength={1}
-                  onChange={(e) => setOtp(e.target.value)}
-                />
-                <InputOTPSlot
-                  maxLength={1}
-                  onChange={(e) => setOtp(e.target.value)}
-                />
-                <InputOTPSlot
-                  maxLength={1}
-                  onChange={(e) => setOtp(e.target.value)}
-                />
-              </InputOTPGroup>
+              <InputOTP maxLength={6} value={otp} onChange={handleOtpValueChange}>
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
               <Button size="sm" onClick={handleVerifyOTP}>
                 Verify OTP
               </Button>
@@ -262,7 +251,7 @@ export const SecuritySettings: React.FC = () => {
                     <Checkbox
                       id="terms"
                       checked={termsAccepted}
-                      onCheckedChange={setTermsAccepted}
+                      onCheckedChange={(checked) => setTermsAccepted(checked === true)}
                     />
                     <Label htmlFor="terms">I accept the terms and conditions</Label>
                   </div>
