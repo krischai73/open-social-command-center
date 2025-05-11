@@ -45,3 +45,27 @@ export const setApiMode = (mode: ApiMode, baseUrl?: string, apiKey?: string, sup
   if (supabaseUrl) apiConfig.supabaseUrl = supabaseUrl;
   if (supabaseKey) apiConfig.supabaseKey = supabaseKey;
 };
+
+// Get current user id from Supabase
+export const getCurrentUserId = async (): Promise<string | null> => {
+  if (!useSupabase()) return null;
+  
+  try {
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
+      apiConfig.supabaseUrl || '',
+      apiConfig.supabaseKey || ''
+    );
+    
+    const { data, error } = await supabase.auth.getSession();
+    if (error || !data.session) {
+      console.error('Error getting session:', error);
+      return null;
+    }
+    
+    return data.session.user.id;
+  } catch (error) {
+    console.error('Error getting current user:', error);
+    return null;
+  }
+};
