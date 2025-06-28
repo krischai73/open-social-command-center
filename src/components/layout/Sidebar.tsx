@@ -61,7 +61,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
             to="/" 
             icon={Home} 
             title="Dashboard" 
-            isActive={location.pathname === '/'} 
+            isActive={location.pathname === '/' || location.pathname === '/dashboard'} 
             isCollapsed={!isOpen} 
           />
           <NavItem 
