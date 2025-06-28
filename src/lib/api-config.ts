@@ -12,8 +12,8 @@ interface ApiConfig {
 
 // Default configuration - change this when ready to connect to real API
 const apiConfig: ApiConfig = {
-  // Set to 'supabase' to use Supabase backend
-  mode: 'supabase',
+  // Set to 'mock' when Supabase env vars are missing, otherwise 'supabase'
+  mode: (import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY) ? 'supabase' : 'mock',
   
   // Update this URL when your real API server is deployed
   baseUrl: 'https://api.example.com',
@@ -48,18 +48,27 @@ export const setApiMode = (mode: ApiMode, baseUrl?: string, apiKey?: string, sup
 
 // Get current user id from Supabase
 export const getCurrentUserId = async (): Promise<string | null> => {
-  if (!useSupabase()) return null;
+  if (!useSupabase()) {
+    console.log('Not using Supabase, returning null user ID');
+    return null;
+  }
+  
+  const config = getApiConfig();
+  if (!config.supabaseUrl || !config.supabaseKey) {
+    console.error('Supabase configuration is missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
+    return null;
+  }
   
   try {
     const { createClient } = await import('@supabase/supabase-js');
     const supabase = createClient(
-      apiConfig.supabaseUrl || '',
-      apiConfig.supabaseKey || ''
+      config.supabaseUrl,
+      config.supabaseKey
     );
     
     const { data, error } = await supabase.auth.getSession();
     if (error || !data.session) {
-      console.error('Error getting session:', error);
+      console.log('No active session found');
       return null;
     }
     
